@@ -12,7 +12,7 @@ class CleanDbPlugin implements Plugin<Project> {
     void apply(Project project) {
         project.extensions.create("database", CleanDbPluginExtension)
         project.task('cleandb', type: CleanDbTask)
-        project.tasks.compileGroovy.dependsOn project.tasks.cleandb
+        //project.tasks.compileGroovy.dependsOn project.tasks.cleandb
     }
 
 
