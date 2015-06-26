@@ -58,7 +58,7 @@ class MigrationProject implements Plugin<Project> {
             }
 
             dependencies {
-                testCompile "${isSP?'com':'org'}.bonitasoft.engine:bonita-client:${bonitaVersionResolved}"
+                testCompile "${isSP?'com':'org'}.bonitasoft.engine:bonita-client${isSP?'-sp':''}:${bonitaVersionResolved}"
             }
 
             task('setupSourceEngine', dependsOn: 'classes', type: JavaExec) {
