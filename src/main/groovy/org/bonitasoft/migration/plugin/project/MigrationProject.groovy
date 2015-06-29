@@ -3,7 +3,6 @@ package org.bonitasoft.migration.plugin.project
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.JavaExec
-
 /**
  *
  *
@@ -15,6 +14,10 @@ class MigrationProject implements Plugin<Project> {
     @Override
     void apply(Project project) {
         //define dependencies for sub projects
+
+
+        project.extensions.create("migrationConfiguration", MigrationProjectExtension)
+
         project.allprojects {
             apply plugin: 'maven'
 
@@ -54,20 +57,26 @@ class MigrationProject implements Plugin<Project> {
                 isSP =  bonitaVersionUnderScore.startsWith('SP')
                 bonitaVersionUnderScore = isSP ? bonitaVersionUnderScore.substring(3):bonitaVersionUnderScore.substring(1)
                 bonitaVersion = bonitaVersionUnderScore.replace('_', '.')
+                previousVersion = bonitaVersions[bonitaVersions.indexOf(bonitaVersion)-1]
                 bonitaVersionResolved = overridedVersions.containsKey(bonitaVersion) ? overridedVersions.get(bonitaVersion) : bonitaVersion
             }
 
             dependencies {
+                compile "${isSP?'com':'org'}.bonitasoft.engine:bonita-client${isSP?'-sp':''}:${bonitaVersionResolved}"
+                compile "${isSP?'com.bonitasoft.engine.test:bonita-integration-tests-sp':'org.bonitasoft.engine.test:bonita-server-test-utils'}:${previousVersion}"
                 testCompile "${isSP?'com':'org'}.bonitasoft.engine:bonita-client${isSP?'-sp':''}:${bonitaVersionResolved}"
+                testCompile "${isSP?'com.bonitasoft.engine.test:bonita-integration-tests-sp':'org.bonitasoft.engine.test:bonita-server-test-utils'}:${bonitaVersionResolved}"
             }
 
             task('setupSourceEngine', dependsOn: 'classes', type: JavaExec) {
                 doFirst {
                     println "bonita version declared = $bonitaVersionUnderScore or $bonitaVersion"
                     println "bonita version resolved = $bonitaVersionResolved"
+                    println "properties = $systemProperties"
                 }
                 main "org.bonitasoft.migration.MigrationFiller${isSP?'SP':''}" + bonitaVersionUnderScore
                 classpath = sourceSets.main.runtimeClasspath
+                systemProperties =["bonita.home":project.rootProject.buildDir.absolutePath+"/bonita-home"]
             }
             tasks.setupSourceEngine.dependsOn tasks.jar
 

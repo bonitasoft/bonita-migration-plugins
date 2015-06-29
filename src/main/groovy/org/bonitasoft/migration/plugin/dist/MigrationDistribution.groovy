@@ -91,8 +91,13 @@ class MigrationDistribution implements Plugin<Project> {
     launch the classes to execute processes in source version
  */
 
-        project.task('unpackBonitaHomeSource') << {
-            println "TODO"
+        project.task('unpackBonitaHomeSource', type: Copy) {
+            from {
+                def conf = project.configurations."config_${project.source}"
+                project.zipTree(conf.files[0].getAbsolutePath())
+            }
+            into project.rootProject.buildDir
+
         }
         project.tasks.unpackBonitaHomeSource.dependsOn project.tasks.addBonitaHomes
 /*
