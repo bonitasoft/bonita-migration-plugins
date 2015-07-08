@@ -24,16 +24,6 @@ class MigrationDistribution implements Plugin<Project> {
         defineDependencies(project)
         defineTasks(project)
 
-        project.database {
-            dbvendor = System.getProperty("db.vendor", "postgres")
-            dburl = System.getProperty("db.url", "jdbc:postgresql://localhost:5432/migration");
-            dbuser = System.getProperty("db.user", "bonita")
-            dbpassword = System.getProperty("db.password", "bpm")
-            dbdriverClass = System.getProperty("db.driverClass", "org.postgresql.Driver")
-            dbRootUser = System.getProperty("db.root.user", "postgres")
-            dbRootPassword = System.getProperty("db.root.password", "postgres")
-            classpath = project.configurations.drivers
-        }
         project.distributions {
             main {
                 contents {
@@ -84,11 +74,20 @@ class MigrationDistribution implements Plugin<Project> {
         }
 
         project.task('testMigration') {
-            description "Run the migration and launch test on it. Optional -D parameters: source.version,target.version "
+            description "Run the migration and launch test on it. Optional -D parameters: source.version,target.version"
         }
 
-        //Define task flow
         Project testProject = getTestProject(project, project.target)
+
+        testProject.tasks.setupSourceEngine{
+            doFirst{
+                systemProperties = project.database.properties + ["bonita.home":project.rootProject.buildDir.absolutePath+"/bonita-home"]
+            }
+        }
+
+
+
+        //Define task flow
         project.tasks.addBonitaHomes.dependsOn project.tasks.putMigrationPathsInDist
         project.tasks.distZip.dependsOn project.tasks.addBonitaHomes
         project.tasks.unpackBonitaHomeSource.dependsOn project.tasks.addBonitaHomes
@@ -135,7 +134,7 @@ class MigrationDistribution implements Plugin<Project> {
         }
     }
 
-    private Project getTestProject(Project project, target) {
+    private static Project getTestProject(Project project, target) {
         def testProject = project.rootProject.subprojects.find {
             it.name.startsWith(MigrationConstants.MIGRATION_PREFIX) && it.name.endsWith(target.replace('.', '_'))
         }

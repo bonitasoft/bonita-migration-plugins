@@ -64,6 +64,7 @@ class MigrationProject implements Plugin<Project> {
             }
 
             dependencies {
+                compile group: project.getGroup(), name:'bonita-migration-common', version:project.getVersion()
                 compile "${isSP?'com':'org'}.bonitasoft.engine:bonita-client${isSP?'-sp':''}:${bonitaVersionResolved}"
                 compile "${isSP?'com.bonitasoft.engine.test:bonita-integration-tests-local-sp':'org.bonitasoft.engine.test:bonita-server-test-utils'}:${previousVersion}"
                 testCompile "${isSP?'com':'org'}.bonitasoft.engine:bonita-client${isSP?'-sp':''}:${bonitaVersionResolved}"
@@ -77,9 +78,9 @@ class MigrationProject implements Plugin<Project> {
                     println "properties = $systemProperties"
                 }
                 description "Setup the engine in order to run migration tests on it."
-                main "org.bonitasoft.migration.MigrationFiller${isSP?'SP':''}" + bonitaVersionUnderScore
+                main "org.bonitasoft.migration.filler.FillerRunner"
+                args "org.bonitasoft.migration.MigrationFiller${isSP?'SP':''}" + bonitaVersionUnderScore
                 classpath = sourceSets.main.runtimeClasspath
-                systemProperties =["bonita.home":project.rootProject.buildDir.absolutePath+"/bonita-home"]
             }
             tasks.setupSourceEngine.dependsOn tasks.jar
 
