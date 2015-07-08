@@ -1,5 +1,6 @@
 package org.bonitasoft.migration.plugin.dist
 
+import org.bonitasoft.migration.plugin.MigrationConstants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
@@ -54,7 +55,7 @@ class MigrationDistribution implements Plugin<Project> {
             dbpassword = System.getProperty("db.password", "bpm")
             dbdriverClass = System.getProperty("db.driverClass", "org.postgresql.Driver")
             dbRootUser = System.getProperty("db.root.user", "postgres")
-            dbRootPassword = System.getProperty("db.root.password", "admin")
+            dbRootPassword = System.getProperty("db.root.password", "postgres")
             classpath = project.configurations.drivers
         }
 
@@ -111,17 +112,17 @@ class MigrationDistribution implements Plugin<Project> {
         project.tasks.migrate.dependsOn project.tasks.unpackBonitaHomeSource
         project.tasks.migrate.dependsOn {
             def sourceFiller = project.rootProject.subprojects.find {
-                it.name.startsWith("migration") &&  it.name.endsWith(project.target.replace('.', '_'))
+                it.name.startsWith(MigrationConstants.MIGRATION_PREFIX) &&  it.name.endsWith(project.target.replace('.', '_'))
             }
             sourceFiller.tasks.setupSourceEngine
         }
 
         project.task('testMigration') {
-            description "Run the migration and launch test on it."
+            description "Run the migration and launch test on it. Optional -D parameters: source.version,target.version "
         }
         project.tasks.testMigration.dependsOn {
             project.rootProject.subprojects.find {
-                it.name.startsWith("migration") &&  it.name.endsWith(project.target.replace('.', '_'))
+                it.name.startsWith(MigrationConstants.MIGRATION_PREFIX) &&  it.name.endsWith(project.target.replace('.', '_'))
             }.tasks.test
         }
         project.tasks.testMigration.dependsOn project.tasks.migrate

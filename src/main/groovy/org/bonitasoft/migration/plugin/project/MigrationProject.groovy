@@ -1,5 +1,6 @@
 package org.bonitasoft.migration.plugin.project
 
+import org.bonitasoft.migration.plugin.MigrationConstants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.JavaExec
@@ -10,6 +11,7 @@ import org.gradle.api.tasks.JavaExec
  * @author Baptiste Mesta
  */
 class MigrationProject implements Plugin<Project> {
+
 
     @Override
     void apply(Project project) {
@@ -50,10 +52,10 @@ class MigrationProject implements Plugin<Project> {
             }
         }
         //configure migration filler/checker projects
-        project.configure( project.subprojects.findAll { it.name.startsWith('migration') }) {
+        project.configure( project.subprojects.findAll { it.name.startsWith(MigrationConstants.MIGRATION_PREFIX) }) {
 
             ext {
-                bonitaVersionUnderScore = name.substring('migration'.length())
+                bonitaVersionUnderScore = name.substring(MigrationConstants.MIGRATION_PREFIX.length())
                 isSP =  bonitaVersionUnderScore.startsWith('SP')
                 bonitaVersionUnderScore = isSP ? bonitaVersionUnderScore.substring(3):bonitaVersionUnderScore.substring(1)
                 bonitaVersion = bonitaVersionUnderScore.replace('_', '.')
