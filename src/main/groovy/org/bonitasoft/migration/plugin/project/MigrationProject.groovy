@@ -63,9 +63,9 @@ class MigrationProject implements Plugin<Project> {
 
             dependencies {
                 compile "${isSP?'com':'org'}.bonitasoft.engine:bonita-client${isSP?'-sp':''}:${bonitaVersionResolved}"
-                compile "${isSP?'com.bonitasoft.engine.test:bonita-integration-tests-sp':'org.bonitasoft.engine.test:bonita-server-test-utils'}:${previousVersion}"
+                compile "${isSP?'com.bonitasoft.engine.test:bonita-integration-tests-local-sp':'org.bonitasoft.engine.test:bonita-server-test-utils'}:${previousVersion}"
                 testCompile "${isSP?'com':'org'}.bonitasoft.engine:bonita-client${isSP?'-sp':''}:${bonitaVersionResolved}"
-                testCompile "${isSP?'com.bonitasoft.engine.test:bonita-integration-tests-sp':'org.bonitasoft.engine.test:bonita-server-test-utils'}:${bonitaVersionResolved}"
+                testCompile "${isSP?'com.bonitasoft.engine.test:bonita-integration-tests-local-sp':'org.bonitasoft.engine.test:bonita-server-test-utils'}:${bonitaVersionResolved}"
             }
 
             task('setupSourceEngine', dependsOn: 'classes', type: JavaExec) {
@@ -74,6 +74,7 @@ class MigrationProject implements Plugin<Project> {
                     println "bonita version resolved = $bonitaVersionResolved"
                     println "properties = $systemProperties"
                 }
+                description "Setup the engine in order to run migration tests on it."
                 main "org.bonitasoft.migration.MigrationFiller${isSP?'SP':''}" + bonitaVersionUnderScore
                 classpath = sourceSets.main.runtimeClasspath
                 systemProperties =["bonita.home":project.rootProject.buildDir.absolutePath+"/bonita-home"]

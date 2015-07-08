@@ -117,7 +117,7 @@ class MigrationDistribution implements Plugin<Project> {
         }
 
         project.task('testMigration') {
-
+            description "Run the migration and launch test on it."
         }
         project.tasks.testMigration.dependsOn {
             project.rootProject.subprojects.find {

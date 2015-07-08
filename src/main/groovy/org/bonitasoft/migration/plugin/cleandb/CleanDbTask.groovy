@@ -8,6 +8,11 @@ import org.gradle.api.tasks.TaskAction
  */
 class CleanDbTask extends DefaultTask {
 
+    @Override
+    String getDescription() {
+        return "Drop and recreate the database in order to launch test in a clean one."
+    }
+
     @TaskAction
     def cleanDb() {
         def CleanDbPluginExtension properties = project.database
