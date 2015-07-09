@@ -79,10 +79,15 @@ class MigrationDistribution implements Plugin<Project> {
 
         Project testProject = getTestProject(project, project.target)
 
+        def setSystemPropertiesForEngine = {
+            systemProperties = project.database.properties + ["bonita.home": project.rootProject.buildDir.absolutePath + "/bonita-home"]
+        }
         testProject.tasks.setupSourceEngine{
-            doFirst{
-                systemProperties = project.database.properties + ["bonita.home":project.rootProject.buildDir.absolutePath+"/bonita-home"]
-            }
+            doFirst setSystemPropertiesForEngine
+        }
+        testProject.tasks.test{
+            doFirst setSystemPropertiesForEngine
+
         }
 
 
