@@ -59,14 +59,17 @@ class MigrationProject implements Plugin<Project> {
                 isSP =  bonitaVersionUnderScore.startsWith('SP')
                 bonitaVersionUnderScore = isSP ? bonitaVersionUnderScore.substring(3):bonitaVersionUnderScore.substring(1)
                 bonitaVersion = bonitaVersionUnderScore.replace('_', '.')
-                previousVersion = bonitaVersions[bonitaVersions.indexOf(bonitaVersion)-1]
                 bonitaVersionResolved = overridedVersions.containsKey(bonitaVersion) ? overridedVersions.get(bonitaVersion) : bonitaVersion
+                previousVersion = bonitaVersions[bonitaVersions.indexOf(bonitaVersion)-1]
+                previousVersionUnderScore =  previousVersion.replace('.', '_')
+                bonitaPreviousVersionResolved = overridedVersions.containsKey(previousVersion) ? overridedVersions.get(previousVersion) : previousVersion
+
             }
 
             dependencies {
                 compile group: project.getGroup(), name:'bonita-migration-common', version:project.getVersion()
                 compile "${isSP?'com':'org'}.bonitasoft.engine:bonita-client${isSP?'-sp':''}:${bonitaVersionResolved}"
-                compile "${isSP?'com.bonitasoft.engine.test:bonita-integration-tests-local-sp':'org.bonitasoft.engine.test:bonita-server-test-utils'}:${previousVersion}"
+                compile "${isSP?'com.bonitasoft.engine.test:bonita-integration-tests-local-sp':'org.bonitasoft.engine.test:bonita-server-test-utils'}:${bonitaPreviousVersionResolved}"
                 testCompile "${isSP?'com':'org'}.bonitasoft.engine:bonita-client${isSP?'-sp':''}:${bonitaVersionResolved}"
                 testCompile "${isSP?'com.bonitasoft.engine.test:bonita-integration-tests-local-sp':'org.bonitasoft.engine.test:bonita-server-test-utils'}:${bonitaVersionResolved}"
             }
@@ -78,12 +81,13 @@ class MigrationProject implements Plugin<Project> {
                     println "properties = $systemProperties"
                 }
                 description "Setup the engine in order to run migration tests on it."
+
+                //FIXME iterate on all fillers ?
                 main "org.bonitasoft.migration.filler.FillerRunner"
-                args "org.bonitasoft.migration.MigrationFiller${isSP?'SP':''}" + bonitaVersionUnderScore
+                args "org.bonitasoft.migration.FillBeforeMigratingTo${isSP?'SP':''}" + bonitaVersionUnderScore
                 classpath = sourceSets.main.runtimeClasspath
             }
             tasks.setupSourceEngine.dependsOn tasks.jar
-
 
         }
     }

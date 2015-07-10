@@ -68,9 +68,21 @@ class MigrationDistribution implements Plugin<Project> {
 
         }
 
+/*
+    Migration from source to target version
+ */
+        project.task('changeProperties', type: ChangePropertiesTask)
+
         project.task('migrate', type: JavaExec) {
             main = "org.bonitasoft.migration.core.Migration"
             classpath = project.sourceSets.main.runtimeClasspath
+        }
+        project.tasks.migrate.dependsOn project.tasks.unpackBonitaHomeSource
+        project.tasks.migrate.dependsOn {
+            def sourceFiller = project.rootProject.subprojects.find {
+                it.name.startsWith(MigrationConstants.MIGRATION_PREFIX) && it.name.endsWith(project.target.replace('.', '_'))
+            }
+            sourceFiller.tasks.setupSourceEngine
         }
 
         project.task('testMigration') {
@@ -82,23 +94,25 @@ class MigrationDistribution implements Plugin<Project> {
         def setSystemPropertiesForEngine = {
             systemProperties = project.database.properties + ["bonita.home": project.rootProject.buildDir.absolutePath + "/bonita-home"]
         }
-        testProject.tasks.setupSourceEngine{
+        testProject.tasks.setupSourceEngine {
             doFirst setSystemPropertiesForEngine
         }
-        testProject.tasks.test{
+        testProject.tasks.test {
             doFirst setSystemPropertiesForEngine
 
         }
-
-
 
         //Define task flow
         project.tasks.addBonitaHomes.dependsOn project.tasks.putMigrationPathsInDist
         project.tasks.distZip.dependsOn project.tasks.addBonitaHomes
         project.tasks.unpackBonitaHomeSource.dependsOn project.tasks.addBonitaHomes
+
+        testProject.tasks.setupSourceEngine.dependsOn project.tasks.unpackBonitaHomeSource
         testProject.tasks.setupSourceEngine.dependsOn project.tasks.cleandb
-        project.tasks.migrate.dependsOn project.tasks.unpackBonitaHomeSource
+
         project.tasks.migrate.dependsOn testProject.tasks.setupSourceEngine
+        project.tasks.migrate.dependsOn project.tasks.changeProperties
+
         project.tasks.testMigration.dependsOn testProject.tasks.test
         project.tasks.testMigration.dependsOn project.tasks.migrate
         project.tasks.testMigration.dependsOn project.tasks.distZip
@@ -113,6 +127,8 @@ class MigrationDistribution implements Plugin<Project> {
                 add "config_$it", "org.bonitasoft.engine:bonita-home:${project.overridedVersions.containsKey(it) ? project.overridedVersions.get(it) : it}@zip"
             }
             drivers group: 'org.postgresql', name: 'postgresql', version: '9.3-1102-jdbc41'
+            compile group: 'org.postgresql', name: 'postgresql', version: '9.3-1102-jdbc41'
+
             //drivers group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
 
         }
