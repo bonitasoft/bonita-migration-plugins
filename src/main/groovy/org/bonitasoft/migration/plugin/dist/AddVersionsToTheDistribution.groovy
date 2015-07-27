@@ -2,6 +2,7 @@ package org.bonitasoft.migration.plugin.dist
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+
 /**
  * @author Laurent Leseigneur
  */
@@ -18,13 +19,12 @@ class AddVersionsToTheDistribution extends DefaultTask {
     @TaskAction
     def addVersionsToTheDistribution() {
         Properties properties = new Properties()
-        propertiesFile.withInputStream {
-            properties.load(it)
+        properties.put "versions", versionsToAdd.toString()
+        if (!propertiesFile.exists()) {
+            propertiesFile.parentFile.mkdirs()
+            propertiesFile.createNewFile()
         }
-        println "before = " + properties.toMapString()
-        properties.put "versions",versionsToAdd.toString()
-        println "after = " + properties.toMapString()
-        properties.store(new FileWriter(propertiesFile),"");
+        properties.store(new FileWriter(propertiesFile), "Bonita versions for migration");
 
     }
 }
