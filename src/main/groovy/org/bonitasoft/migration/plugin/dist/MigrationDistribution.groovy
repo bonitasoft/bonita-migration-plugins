@@ -16,9 +16,7 @@ class MigrationDistribution implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-
         project.mainClassName = "org.bonitasoft.migration.core.Migration"
-
         defineConfigurations(project)
         defineRepositories(project)
         defineDependencies(project)
@@ -45,7 +43,7 @@ class MigrationDistribution implements Plugin<Project> {
                     conf.files[0].getAbsolutePath()
                 }
             }
-            into new File(project.buildDir, 'homes')
+            into new File(project.projectDir, 'src/main/resources/homes')
         }
         project.task('addVersionsToTheDistribution', type: AddVersionsToTheDistributionTask) {
             versionsToAdd = project.bonitaVersions
