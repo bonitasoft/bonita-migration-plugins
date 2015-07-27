@@ -51,6 +51,10 @@ class MigrationDistribution implements Plugin<Project> {
             }
             into new File(project.buildDir, 'homes')
         }
+        project.task('addVersionsToTheDistribution', type: AddVersionsToTheDistribution) {
+            versionsToAdd = project.bonitaVersions
+            propertiesFile = new File(project.projectDir, 'src/main/dist/migration.properties')
+        }
 
 /*
     TODO prepare test resource: create the installation with the source version
@@ -104,7 +108,8 @@ class MigrationDistribution implements Plugin<Project> {
 
         //Define task flow
         project.tasks.addBonitaHomes.dependsOn project.tasks.putMigrationPathsInDist
-        project.tasks.distZip.dependsOn project.tasks.addBonitaHomes
+        project.tasks.addVersionsToTheDistribution.dependsOn project.tasks.addBonitaHomes
+        project.tasks.distZip.dependsOn project.tasks.addVersionsToTheDistribution
         project.tasks.unpackBonitaHomeSource.dependsOn project.tasks.addBonitaHomes
 
         testProject.tasks.setupSourceEngine.dependsOn project.tasks.unpackBonitaHomeSource
