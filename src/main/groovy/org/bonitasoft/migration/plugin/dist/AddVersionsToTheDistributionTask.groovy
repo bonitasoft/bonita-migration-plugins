@@ -6,7 +6,7 @@ import org.gradle.api.tasks.TaskAction
 /**
  * @author Laurent Leseigneur
  */
-class AddVersionsToTheDistribution extends DefaultTask {
+class AddVersionsToTheDistributionTask extends DefaultTask {
 
     String[] versionsToAdd = []
     File propertiesFile

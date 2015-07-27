@@ -23,6 +23,7 @@ class MigrationDistribution implements Plugin<Project> {
         defineRepositories(project)
         defineDependencies(project)
         defineTasks(project)
+        defineTaskDependencies(project)
 
         project.distributions {
             main {
@@ -33,15 +34,10 @@ class MigrationDistribution implements Plugin<Project> {
                 }
             }
         }
-
-
     }
 
     private void defineTasks(Project project) {
         //Define tasks
-        project.task('putMigrationPathsInDist') << {
-            //new File(projectDir, 'src/main/dist/bin/migration_paths').write(bonitaVersions.toString())
-        }
         project.task('addBonitaHomes', type: Copy) {
             from {
                 project.bonitaVersions.collect {
@@ -51,18 +47,10 @@ class MigrationDistribution implements Plugin<Project> {
             }
             into new File(project.buildDir, 'homes')
         }
-        project.task('addVersionsToTheDistribution', type: AddVersionsToTheDistribution) {
+        project.task('addVersionsToTheDistribution', type: AddVersionsToTheDistributionTask) {
             versionsToAdd = project.bonitaVersions
             propertiesFile = new File(project.projectDir, 'src/main/resources/bonita-versions.properties')
         }
-
-/*
-    TODO prepare test resource: create the installation with the source version
-    clean and create the database
-    unpack the source bonita home
-    start an engine in source version
-    launch the classes to execute processes in source version
- */
         project.task('unpackBonitaHomeSource', type: Copy) {
             from {
                 def conf = project.configurations."config_${project.source}"
@@ -71,30 +59,21 @@ class MigrationDistribution implements Plugin<Project> {
             into project.rootProject.buildDir
 
         }
-
-/*
-    Migration from source to target version
- */
         project.task('changeProperties', type: ChangePropertiesTask)
-
         project.task('migrate', type: JavaExec) {
             main = "org.bonitasoft.migration.core.Migration"
             classpath = project.sourceSets.main.runtimeClasspath
         }
-        project.tasks.migrate.dependsOn project.tasks.unpackBonitaHomeSource
-        project.tasks.migrate.dependsOn {
-            def sourceFiller = project.rootProject.subprojects.find {
-                it.name.startsWith(MigrationConstants.MIGRATION_PREFIX) && it.name.endsWith(project.target.replace('.', '_'))
-            }
-            sourceFiller.tasks.setupSourceEngine
-        }
-
         project.task('testMigration') {
             description "Run the migration and launch test on it. Optional -D parameters: source.version,target.version"
         }
 
-        Project testProject = getTestProject(project, project.target)
 
+    }
+
+    private void defineTaskDependencies(Project project) {
+
+        Project testProject = getTestProject(project, project.target)
         def setSystemPropertiesForEngine = {
             systemProperties = project.database.properties + ["bonita.home": project.rootProject.buildDir.absolutePath + "/bonita-home"]
         }
@@ -105,11 +84,16 @@ class MigrationDistribution implements Plugin<Project> {
             doFirst setSystemPropertiesForEngine
 
         }
-
-        //Define task flow
-        project.tasks.addBonitaHomes.dependsOn project.tasks.putMigrationPathsInDist
-        project.tasks.addVersionsToTheDistribution.dependsOn project.tasks.addBonitaHomes
-        project.tasks.distZip.dependsOn project.tasks.addVersionsToTheDistribution
+//Define task flow
+        project.tasks.migrate.dependsOn project.tasks.unpackBonitaHomeSource
+        project.tasks.migrate.dependsOn {
+            def sourceFiller = project.rootProject.subprojects.find {
+                it.name.startsWith(MigrationConstants.MIGRATION_PREFIX) && it.name.endsWith(project.target.replace('.', '_'))
+            }
+            sourceFiller.tasks.setupSourceEngine
+        }
+        project.tasks.addBonitaHomes.dependsOn project.tasks.addVersionsToTheDistribution
+        project.tasks.distZip.dependsOn project.tasks.addBonitaHomes
         project.tasks.unpackBonitaHomeSource.dependsOn project.tasks.addBonitaHomes
 
         testProject.tasks.setupSourceEngine.dependsOn project.tasks.unpackBonitaHomeSource
