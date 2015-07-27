@@ -53,7 +53,7 @@ class MigrationDistribution implements Plugin<Project> {
         }
         project.task('addVersionsToTheDistribution', type: AddVersionsToTheDistribution) {
             versionsToAdd = project.bonitaVersions
-            propertiesFile = new File(project.projectDir, 'src/main/dist/migration.properties')
+            propertiesFile = new File(project.projectDir, 'src/main/resources/migration.properties')
         }
 
 /*
