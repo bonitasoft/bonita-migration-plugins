@@ -18,7 +18,6 @@ class MigrationProject implements Plugin<Project> {
         //define dependencies for sub projects
 
 
-        project.extensions.create("migrationConfiguration", MigrationProjectExtension)
 
         project.allprojects {
             apply plugin: 'maven'
