@@ -5,7 +5,7 @@ import org.gradle.api.file.FileCollection
 /**
  * @author Baptiste Mesta
  */
-class CleanDbPluginExtension {
+class CleanDbPluginExtension{
 
     def String dbvendor
     def String dbRootUser

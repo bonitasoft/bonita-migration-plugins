@@ -1,8 +1,10 @@
 package org.bonitasoft.migration.plugin.dist
+
 import org.bonitasoft.migration.plugin.MigrationConstants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
+
 /**
  *
  * comes in addition of the application plugin to add bonita homes and do all common things on the migration distribution
@@ -54,7 +56,6 @@ class MigrationDistribution implements Plugin<Project> {
             into project.rootProject.buildDir
 
         }
-        project.task('changeProperties', type: ChangePropertiesTask)
         project.task('migrate', type: MigrateTask)
         project.task('testMigration') {
             description "Run the migration and launch test on it. Optional -D parameters: source.version,target.version"
@@ -67,7 +68,14 @@ class MigrationDistribution implements Plugin<Project> {
 
         Project testProject = getTestProject(project, project.target)
         def setSystemPropertiesForEngine = {
-            systemProperties = project.database.properties + ["bonita.home": project.rootProject.buildDir.absolutePath + "/bonita-home"]
+            systemProperties = [
+                    "dbvendor"     : String.valueOf(project.database.properties.dbvendor),
+                    "dburl"        : String.valueOf(project.database.properties.dburl),
+                    "dbuser"       : String.valueOf(project.database.properties.dbuser),
+                    "dbpassword"   : String.valueOf(project.database.properties.dbpassword),
+                    "dbdriverClass": String.valueOf(project.database.properties.dbdriverClass),
+                    "bonita.home"   : String.valueOf(project.rootProject.buildDir.absolutePath + File.separator + "bonita-home"),
+            ]
         }
         testProject.tasks.setupSourceEngine {
             doFirst setSystemPropertiesForEngine
@@ -92,7 +100,6 @@ class MigrationDistribution implements Plugin<Project> {
         testProject.tasks.setupSourceEngine.dependsOn project.tasks.cleandb
 
         project.tasks.migrate.dependsOn testProject.tasks.setupSourceEngine
-        project.tasks.migrate.dependsOn project.tasks.changeProperties
 
         project.tasks.testMigration.dependsOn testProject.tasks.test
         project.tasks.testMigration.dependsOn project.tasks.migrate
