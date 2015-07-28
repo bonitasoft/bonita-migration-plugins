@@ -1,11 +1,8 @@
 package org.bonitasoft.migration.plugin.dist
-
 import org.bonitasoft.migration.plugin.MigrationConstants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
-import org.gradle.api.tasks.JavaExec
-
 /**
  *
  * comes in addition of the application plugin to add bonita homes and do all common things on the migration distribution
@@ -58,10 +55,7 @@ class MigrationDistribution implements Plugin<Project> {
 
         }
         project.task('changeProperties', type: ChangePropertiesTask)
-        project.task('migrate', type: JavaExec) {
-            main = "org.bonitasoft.migration.core.Migration"
-            classpath = project.sourceSets.main.runtimeClasspath
-        }
+        project.task('migrate', type: MigrateTask)
         project.task('testMigration') {
             description "Run the migration and launch test on it. Optional -D parameters: source.version,target.version"
         }
