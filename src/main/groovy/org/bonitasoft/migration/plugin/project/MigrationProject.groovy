@@ -67,7 +67,7 @@ class MigrationProject implements Plugin<Project> {
             }
 
             dependencies {
-                compile group: project.getGroup(), name:'bonita-migration-common', version:project.getVersion()
+                compile group: "org.bonitasoft.migration", name:'bonita-migration-common', version:project.getVersion()
                 compile "${isSP?'com':'org'}.bonitasoft.engine:bonita-client${isSP?'-sp':''}:${bonitaVersionResolved}"
                 compile "${isSP?'com.bonitasoft.engine.test:bonita-integration-tests-local-sp':'org.bonitasoft.engine.test:bonita-server-test-utils'}:${bonitaPreviousVersionResolved}"
                 testCompile "${isSP?'com':'org'}.bonitasoft.engine:bonita-client${isSP?'-sp':''}:${bonitaVersionResolved}"

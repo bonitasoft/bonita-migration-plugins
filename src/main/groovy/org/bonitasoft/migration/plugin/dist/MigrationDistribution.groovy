@@ -109,9 +109,9 @@ class MigrationDistribution implements Plugin<Project> {
         project.dependencies {
             compile gradleApi()
             filler "org.bonitasoft.engine:bonita-client:${project.source}"
-            filler "org.bonitasoft.engine:bonita-home:${project.source}"
+            filler "org.bonitasoft.console:bonita-home:${project.source}:full@zip"
             project.bonitaVersions.each {
-                add "config_$it", "org.bonitasoft.engine:bonita-home:${project.overridedVersions.containsKey(it) ? project.overridedVersions.get(it) : it}@zip"
+                add "config_$it", "org.bonitasoft.console:bonita-home:${project.overridedVersions.containsKey(it) ? project.overridedVersions.get(it) : it}:full@zip"
             }
             drivers group: 'org.postgresql', name: 'postgresql', version: '9.3-1102-jdbc41'
             compile group: 'org.postgresql', name: 'postgresql', version: '9.3-1102-jdbc41'
