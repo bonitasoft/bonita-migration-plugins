@@ -1,10 +1,8 @@
 package org.bonitasoft.migration.plugin.dist
-
 import org.bonitasoft.migration.plugin.MigrationConstants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
-
 /**
  *
  * comes in addition of the application plugin to add bonita homes and do all common things on the migration distribution
@@ -12,6 +10,15 @@ import org.gradle.api.tasks.Copy
  * @author Baptiste Mesta
  */
 class MigrationDistribution implements Plugin<Project> {
+
+    static final String MIGRATION_DISTRIBUTION_PLUGIN_NAME = "migration-dist"
+    static final String MIGRATION_DISTRIBUTION_GROUP = MIGRATION_DISTRIBUTION_PLUGIN_NAME
+
+    static final String TASK_ADD_BONITA_HOMES = "addBonitaHomes"
+    static final String TASK_ADD_VERSION_IN_DIST = "addVersionsToTheDistribution"
+    static final String TASK_UNPACK_BONITA_HOME = "unpackBonitaHomeSource"
+    static final String TASK_MIGRATE = "migrate"
+    static final String TASK_TEST_MIGRATION = "testMigration"
 
     @Override
     void apply(Project project) {
@@ -35,7 +42,9 @@ class MigrationDistribution implements Plugin<Project> {
 
     private void defineTasks(Project project) {
         //Define tasks
-        project.task('addBonitaHomes', type: Copy) {
+        project.task(TASK_ADD_BONITA_HOMES, type: Copy) {
+            group = MIGRATION_DISTRIBUTION_GROUP
+            description = "Get all bonita home for each version and put it in the distribution"
             from {
                 project.bonitaVersions.collect {
                     def conf = project.configurations."config_$it"
@@ -44,11 +53,15 @@ class MigrationDistribution implements Plugin<Project> {
             }
             into new File(project.projectDir, 'src/main/resources/homes')
         }
-        project.task('addVersionsToTheDistribution', type: AddVersionsToTheDistributionTask) {
+        project.task(TASK_ADD_VERSION_IN_DIST, type: AddVersionsToTheDistributionTask) {
+            group = MIGRATION_DISTRIBUTION_GROUP
+            description = "Put possible bonita version inside the distribution"
             versionsToAdd = project.bonitaVersions
             propertiesFile = new File(project.projectDir, 'src/main/resources/bonita-versions.properties')
         }
-        project.task('unpackBonitaHomeSource', type: Copy) {
+        project.task(TASK_UNPACK_BONITA_HOME, type: Copy) {
+            group = MIGRATION_DISTRIBUTION_GROUP
+            description = "Unpack the bonita home to run the migration"
             from {
                 def conf = project.configurations."config_${project.source}"
                 project.zipTree(conf.files[0].getAbsolutePath())
@@ -56,12 +69,14 @@ class MigrationDistribution implements Plugin<Project> {
             into project.rootProject.buildDir
 
         }
-        project.task('migrate', type: MigrateTask)
-        project.task('testMigration') {
-            description "Run the migration and launch test on it. Optional -D parameters: source.version,target.version"
+        project.task(TASK_MIGRATE, type: MigrateTask){
+            group = MIGRATION_DISTRIBUTION_GROUP
+            description = "Run the migration"
         }
-
-
+        project.task(TASK_TEST_MIGRATION) {
+            group = MIGRATION_DISTRIBUTION_GROUP
+            description = "Launch tests after the migration. Optional -D parameters: source.version,target.version"
+        }
     }
 
     private void defineTaskDependencies(Project project) {
@@ -74,7 +89,7 @@ class MigrationDistribution implements Plugin<Project> {
                     "dbuser"       : String.valueOf(project.database.properties.dbuser),
                     "dbpassword"   : String.valueOf(project.database.properties.dbpassword),
                     "dbdriverClass": String.valueOf(project.database.properties.dbdriverClass),
-                    "bonita.home"   : String.valueOf(project.rootProject.buildDir.absolutePath + File.separator + "bonita-home"),
+                    "bonita.home"  : String.valueOf(project.rootProject.buildDir.absolutePath + File.separator + "bonita-home"),
             ]
         }
         testProject.tasks.setupSourceEngine {
@@ -82,9 +97,8 @@ class MigrationDistribution implements Plugin<Project> {
         }
         testProject.tasks.test {
             doFirst setSystemPropertiesForEngine
-
         }
-//Define task flow
+        //Define task flow
         project.tasks.migrate.dependsOn project.tasks.unpackBonitaHomeSource
         project.tasks.migrate.dependsOn {
             def sourceFiller = project.rootProject.subprojects.find {
@@ -145,7 +159,7 @@ class MigrationDistribution implements Plugin<Project> {
 
     private static Project getTestProject(Project project, target) {
         def testProject = project.rootProject.subprojects.find {
-            it.name.startsWith(MigrationConstants.MIGRATION_PREFIX) && it.name.endsWith(target.replace('.', '_'))
+            it.name.startsWith('migrateTo') && it.name.endsWith(target.replace('.', '_'))
         }
         return testProject
     }
