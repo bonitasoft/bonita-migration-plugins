@@ -33,8 +33,10 @@ class MigrationProject implements Plugin<Project> {
                 bonitaVersionUnderScore = name.substring(MigrationConstants.MIGRATION_PREFIX.length())
                 isSP = bonitaVersionUnderScore.startsWith('SP')
                 bonitaVersionUnderScore = isSP ? bonitaVersionUnderScore.substring(3) : bonitaVersionUnderScore.substring(1)
+
                 bonitaVersion = bonitaVersionUnderScore.replace('_', '.')
                 bonitaVersionResolved = overridedVersions.containsKey(bonitaVersion) ? overridedVersions.get(bonitaVersion) : bonitaVersion
+
                 previousVersion = bonitaVersions[bonitaVersions.indexOf(bonitaVersion) - 1]
                 previousVersionUnderScore = previousVersion.replace('.', '_')
                 bonitaPreviousVersionResolved = overridedVersions.containsKey(previousVersion) ? overridedVersions.get(previousVersion) : previousVersion
@@ -77,7 +79,7 @@ class MigrationProject implements Plugin<Project> {
                 def customMavenRepo = System.getProperty("maven.repository")
                 //used in jenkins: add in system property $ {JENKINS_HOME}/userContent/m2_repo and archiva
                 if (customMavenRepo != null) {
-                    println "using custom maven.repository: " + customMavenRepo
+                    logger.info "using custom maven.repository: " + customMavenRepo
                     maven { url customMavenRepo }
                 }
                 mavenCentral()
@@ -93,8 +95,8 @@ class MigrationProject implements Plugin<Project> {
         project.allprojects {
             apply plugin: 'maven'
 
-            ext.source = System.getProperty("source.version", bonitaVersions[bonitaVersions.size() - 2])
             ext.target = System.getProperty("target.version", bonitaVersions.last())
+            ext.source = bonitaVersions[bonitaVersions.indexOf(project.target)-1]
             uploadArchives {
                 repositories {
                     mavenDeployer {

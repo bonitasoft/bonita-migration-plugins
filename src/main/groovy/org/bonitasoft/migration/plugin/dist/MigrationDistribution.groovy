@@ -62,6 +62,9 @@ class MigrationDistribution implements Plugin<Project> {
         project.task(TASK_UNPACK_BONITA_HOME, type: Copy) {
             group = MIGRATION_DISTRIBUTION_GROUP
             description = "Unpack the bonita home to run the migration"
+            doFirst{
+                logger.info("Unpack bonita home in version ${project.source}")
+            }
             from {
                 def conf = project.configurations."config_${project.source}"
                 project.zipTree(conf.files[0].getAbsolutePath())
@@ -75,7 +78,7 @@ class MigrationDistribution implements Plugin<Project> {
         }
         project.task(TASK_TEST_MIGRATION) {
             group = MIGRATION_DISTRIBUTION_GROUP
-            description = "Launch tests after the migration. Optional -D parameters: source.version,target.version"
+            description = "Launch tests after the migration. Optional -D parameters: target.version"
         }
     }
 
@@ -142,7 +145,7 @@ class MigrationDistribution implements Plugin<Project> {
             def customMavenRepo = System.getProperty("maven.repository")
             //used in jenkins: add in system property $ {JENKINS_HOME}/userContent/m2_repo and archiva
             if (customMavenRepo != null) {
-                println "using custom maven.repository: " + customMavenRepo
+                logger.info "using custom maven.repository: " + customMavenRepo
                 maven { url customMavenRepo }
             }
             mavenCentral()

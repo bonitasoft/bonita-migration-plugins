@@ -16,11 +16,10 @@ class MigrateTask extends JavaExec {
                 "db.password"   : String.valueOf(project.database.dbpassword),
                 "db.driverClass": String.valueOf(project.database.dbdriverClass),
                 "bonita.home"   : String.valueOf(project.rootProject.buildDir.absolutePath + File.separator + "bonita-home"),
-                "source.version": String.valueOf(project.source),
                 "target.version": String.valueOf(project.target)
         ]
         setSystemProperties(testValues)
-        println "execute migration with properties $systemProperties"
+        logger.info "execute migration with properties $systemProperties"
         main = "org.bonitasoft.migration.core.Migration"
         setClasspath(project.sourceSets.main.runtimeClasspath)
         super.exec()

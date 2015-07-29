@@ -16,7 +16,7 @@ class CleanDbTask extends DefaultTask {
     @TaskAction
     def cleanDb() {
         def CleanDbPluginExtension properties = project.database
-        println "Migration of ${properties.dbvendor}"
+        logger.info "Migration of ${properties.dbvendor}"
         List<URL> urls = new ArrayList<URL>()
         properties.classpath.each { File file ->
             urls.add(file.toURI().toURL())
@@ -28,10 +28,10 @@ class CleanDbTask extends DefaultTask {
         }
         Sql.class.getClassLoader().loadClass(properties.dbdriverClass)
 
-        println "dbvendor business data dialect is $properties.dbvendor"
+        logger.info "dbvendor business data dialect is $properties.dbvendor"
 
         if (properties.dbvendor.equals("oracle")) {
-            println "cleaning oracle database $properties.dbuser"
+            logger.info "cleaning oracle database $properties.dbuser"
             if (properties.dbRootUser == null || properties.dbRootUser.isEmpty() || properties.dbRootPassword == null || properties.dbRootPassword.isEmpty()) {
                 throw new IllegalStateException("must specify db.root.user and db.root.password for oracle")
             }
@@ -40,7 +40,7 @@ class CleanDbTask extends DefaultTask {
             try {
                 sql.executeUpdate("DROP user " + properties.dbuser + " cascade");
             } catch (Exception e) {
-                println "can't drop database, maybe it did not exist, cause = "
+                logger.info "can't drop database, maybe it did not exist, cause = "
                 e.printStackTrace()
 
             }
@@ -52,7 +52,7 @@ class CleanDbTask extends DefaultTask {
             sql.executeUpdate("GRANT select ON sys.dba_2pc_pending TO " + properties.dbuser);
             sql.executeUpdate("GRANT execute ON sys.dbms_system TO " + properties.dbuser);
         } else if (properties.dbvendor.equals("sqlserver")) {
-            println "cleaning sqlserver database $properties.dburl"
+            logger.info "cleaning sqlserver database $properties.dburl"
             if (properties.dbRootUser == null || properties.dbRootUser.isEmpty() || properties.dbRootPassword == null || properties.dbRootPassword.isEmpty()) {
                 throw new IllegalStateException("must specify db.root.user and db.root.password for sqlserver")
             }
@@ -62,8 +62,8 @@ class CleanDbTask extends DefaultTask {
             def portNumber = parsedUrl[0][3]
             def databaseName = parsedUrl[0][4]
             def genericUrl = parsedUrl[0][1] + serverName + ":" + portNumber
-            println "recreate database $databaseName on server $serverName and port $portNumber with driver $properties.dbdriverClass"
-            println "url is  $genericUrl"
+            logger.info "recreate database $databaseName on server $serverName and port $portNumber with driver $properties.dbdriverClass"
+            logger.info "url is  $genericUrl"
             def Sql sql = Sql.newInstance(genericUrl, properties.dbRootUser, properties.dbRootPassword, properties.dbdriverClass)
             def script = file("init-sqlserver.sql").text
             script = script.replace("@sqlserver.db.name@", databaseName)
@@ -72,16 +72,16 @@ class CleanDbTask extends DefaultTask {
             script.split("GO").each { sql.executeUpdate(it) }
             sql.close()
         } else {
-            println "drop and create: $properties.dburl"
+            logger.info "drop and create: $properties.dburl"
             def parsedUrl = (properties.dburl =~ /(jdbc:\w+:\/\/)([\w\d\.-]+):(\d+)\/([\w\-_\d]+).*/)
             def serverName = parsedUrl[0][2]
             def portNumber = parsedUrl[0][3]
             def databaseName = parsedUrl[0][4]
             def genericUrl = parsedUrl[0][1] + serverName + ":" + portNumber + "/"
-            println "recreate database $databaseName on server $serverName and port $portNumber with driver $properties.dbdriverClass"
-            println "url is  $genericUrl"
+            logger.info "recreate database $databaseName on server $serverName and port $portNumber with driver $properties.dbdriverClass"
+            logger.info "url is  $genericUrl"
             if (properties.dbvendor.equals("postgres")) {
-                println "cleaning postgres database $databaseName"
+                logger.info "cleaning postgres database $databaseName"
                 if (properties.dbRootUser == null || properties.dbRootUser.isEmpty() || properties.dbRootPassword == null || properties.dbRootPassword.isEmpty()) {
                     throw new IllegalStateException("must specify db.root.user and db.root.password for postgres")
                 }
@@ -96,7 +96,7 @@ class CleanDbTask extends DefaultTask {
                     sql.executeUpdate("drop database " + databaseName)
                 } catch (Exception e) {
                     e.printStackTrace()
-                    println "can't drop database, maybe it did not exist"
+                    logger.info "can't drop database, maybe it did not exist"
                 }
                 sql.executeUpdate("create database " + databaseName + (properties.dbvendor.equals("mysql") ? " DEFAULT CHARACTER SET utf8" : ""))
                 sql.close()
