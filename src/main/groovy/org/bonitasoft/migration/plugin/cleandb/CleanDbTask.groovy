@@ -65,7 +65,7 @@ class CleanDbTask extends DefaultTask {
             logger.info "recreate database $databaseName on server $serverName and port $portNumber with driver $properties.dbdriverClass"
             logger.info "url is  $genericUrl"
             def Sql sql = Sql.newInstance(genericUrl, properties.dbRootUser, properties.dbRootPassword, properties.dbdriverClass)
-            def script = file("init-sqlserver.sql").text
+            def script = this.getClass().getResourceAsStream("/init-sqlserver.sql").text
             script = script.replace("@sqlserver.db.name@", databaseName)
             script = script.replace("@sqlserver.connection.username@", properties.dbuser)
             script = script.replace("@sqlserver.connection.password@", properties.dbpassword)
