@@ -15,12 +15,4 @@ dependencies {
     compile localGroovy()
 
 }
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository url: System.getProperty('maven.repository', 'file://' + new File(
-                    System.getProperty('user.home'), '.m2/repository').absolutePath)
-        }
-    }
-}
 
