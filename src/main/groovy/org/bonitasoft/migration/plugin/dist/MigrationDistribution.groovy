@@ -132,7 +132,13 @@ class MigrationDistribution implements Plugin<Project> {
                 add "config_$it", "org.bonitasoft.console:bonita-home:${project.overridedVersions.containsKey(it) ? project.overridedVersions.get(it) : it}:full@zip"
             }
             drivers group: 'org.postgresql', name: 'postgresql', version: '9.3-1102-jdbc41'
+            drivers group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
+            drivers group: 'com.oracle', name: 'ojdbc', version: '6'
+            drivers group: 'com.microsoft.jdbc', name: 'sqlserver', version: '4.0.2206.100'
             compile group: 'org.postgresql', name: 'postgresql', version: '9.3-1102-jdbc41'
+            compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
+            compile group: 'com.oracle', name: 'ojdbc', version: '6'
+            compile group: 'com.microsoft.jdbc', name: 'sqlserver', version: '4.0.2206.100'
 
             //drivers group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
 
