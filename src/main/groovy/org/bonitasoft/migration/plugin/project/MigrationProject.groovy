@@ -1,7 +1,9 @@
 package org.bonitasoft.migration.plugin.project
+
 import org.bonitasoft.migration.plugin.MigrationConstants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+
 /**
  *
  *
@@ -23,6 +25,10 @@ class MigrationProject implements Plugin<Project> {
         configureTestProjects(project)
     }
 
+    /**
+     * Configure the projects with name migrateTo_<version> in order to have the source compiled in the <version>-1 of the engine
+     * and the tests in the version <version> of the engine
+     */
     private Iterable<?> configureTestProjects(Project project) {
         //configuration applied to all projects that are filler/checker project (e.g. migrateTo_7_0_1)
         return project.configure(project.subprojects.findAll {
@@ -46,12 +52,12 @@ class MigrationProject implements Plugin<Project> {
                 String engineClientName
                 String engineTestClientGroup
                 String engineTestClientName
-                if(isSP){
+                if (isSP) {
                     engineClientGroup = "com.bonitasoft.engine"
                     engineClientName = "bonita-client-sp"
                     engineTestClientGroup = "com.bonitasoft.engine.test"
                     engineTestClientName = "bonita-integration-tests-local-sp"
-                }else{
+                } else {
                     engineClientGroup = "org.bonitasoft.engine"
                     engineClientName = "bonita-client"
                     engineTestClientGroup = "org.bonitasoft.engine.test"
@@ -70,6 +76,7 @@ class MigrationProject implements Plugin<Project> {
             tasks.setupSourceEngine.dependsOn tasks.jar
         }
     }
+
 
     private configureSubProjects(Project project) {
         project.subprojects {
@@ -96,7 +103,7 @@ class MigrationProject implements Plugin<Project> {
             apply plugin: 'maven'
 
             ext.target = System.getProperty("target.version", bonitaVersions.last())
-            ext.source = bonitaVersions[bonitaVersions.indexOf(project.target)-1]
+            ext.source = bonitaVersions[bonitaVersions.indexOf(project.target) - 1]
             uploadArchives {
                 repositories {
                     mavenDeployer {

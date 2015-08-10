@@ -140,8 +140,6 @@ class MigrationDistribution implements Plugin<Project> {
             compile group: 'com.oracle', name: 'ojdbc', version: '6'
             compile group: 'com.microsoft.jdbc', name: 'sqlserver', version: '4.0.2206.100'
 
-            //drivers group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
-
         }
     }
 
