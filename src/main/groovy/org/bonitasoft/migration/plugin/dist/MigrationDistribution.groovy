@@ -89,8 +89,18 @@ class MigrationDistribution implements Plugin<Project> {
             doFirst {
                 project.logger.warn "/!\\ Using the workaround to generate windows startup script"
                 def File windowsScript = project.tasks.startScripts.getWindowsScript()
-                windowsScript.text = windowsScript.text.replaceAll('set CLASSPATH=.*','set CLASSPATH=%APP_HOME%/lib/*')
+                windowsScript.text = windowsScript.text.replaceAll('set CLASSPATH=.*', 'set CLASSPATH=%APP_HOME%/lib/*')
             }
+        }
+        project.tasks.clean.doLast {
+            def homesDirectory = new File(project.projectDir, "src/main/resources/homes")
+            if (homesDirectory.exists())
+                homesDirectory.eachFile {
+                    it.delete()
+                }
+
+            def versionsFile = new File(project.projectDir, "src/main/resources/bonita-versions.properties")
+            if (versionsFile.exists()) versionsFile.delete()
         }
     }
 
@@ -121,10 +131,11 @@ class MigrationDistribution implements Plugin<Project> {
             }
             sourceFiller.tasks.setupSourceEngine
         }
-        project.tasks.addBonitaHomes.dependsOn project.tasks.addVersionsToTheDistribution
-        project.tasks.distZip.dependsOn project.tasks.addBonitaHomes
-        project.tasks.unpackBonitaHomeSource.dependsOn project.tasks.addBonitaHomes
+        project.tasks.processResources.dependsOn project.tasks.addBonitaHomes
+        project.tasks.processResources.dependsOn project.tasks.addVersionsToTheDistribution
+        project.tasks.distTar.dependsOn project.tasks.workaroundScript
 
+        project.tasks.unpackBonitaHomeSource.dependsOn project.tasks.jar
         testProject.tasks.setupSourceEngine.dependsOn project.tasks.unpackBonitaHomeSource
         testProject.tasks.setupSourceEngine.dependsOn project.tasks.cleandb
 
@@ -132,7 +143,6 @@ class MigrationDistribution implements Plugin<Project> {
 
         project.tasks.testMigration.dependsOn testProject.tasks.test
         project.tasks.testMigration.dependsOn project.tasks.migrate
-        project.tasks.distZip.dependsOn project.tasks.workaroundScript
         project.tasks.testMigration.dependsOn project.tasks.distZip
     }
 
