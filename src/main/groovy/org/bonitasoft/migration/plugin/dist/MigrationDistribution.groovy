@@ -147,8 +147,8 @@ class MigrationDistribution implements Plugin<Project> {
             drivers group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
             drivers group: 'com.oracle', name: 'ojdbc', version: '6'
             drivers group: 'com.microsoft.jdbc', name: 'sqlserver', version: '4.0.2206.100'
-            testRuntime group: 'org.postgresql', name: 'postgresql', version: '9.3-1102-jdbc41'
-            testRuntime group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
+            compile group: 'org.postgresql', name: 'postgresql', version: '9.3-1102-jdbc41'
+            compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
             testRuntime group: 'com.oracle', name: 'ojdbc', version: '6'
             testRuntime group: 'com.microsoft.jdbc', name: 'sqlserver', version: '4.0.2206.100'
 
