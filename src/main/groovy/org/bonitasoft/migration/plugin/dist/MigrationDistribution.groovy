@@ -1,8 +1,10 @@
 package org.bonitasoft.migration.plugin.dist
+
 import org.bonitasoft.migration.plugin.MigrationConstants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
+
 /**
  *
  * comes in addition of the application plugin to add bonita homes and do all common things on the migration distribution
@@ -28,7 +30,6 @@ class MigrationDistribution implements Plugin<Project> {
         defineDependencies(project)
         defineTasks(project)
         defineTaskDependencies(project)
-
         project.distributions {
             main {
                 contents {
@@ -38,6 +39,8 @@ class MigrationDistribution implements Plugin<Project> {
                 }
             }
         }
+
+
     }
 
     private void defineTasks(Project project) {
@@ -62,7 +65,7 @@ class MigrationDistribution implements Plugin<Project> {
         project.task(TASK_UNPACK_BONITA_HOME, type: Copy) {
             group = MIGRATION_DISTRIBUTION_GROUP
             description = "Unpack the bonita home to run the migration"
-            doFirst{
+            doFirst {
                 logger.info("Unpack bonita home in version ${project.source}")
             }
             from {
@@ -72,13 +75,34 @@ class MigrationDistribution implements Plugin<Project> {
             into project.rootProject.buildDir
 
         }
-        project.task(TASK_MIGRATE, type: MigrateTask){
+        project.task(TASK_MIGRATE, type: MigrateTask) {
             group = MIGRATION_DISTRIBUTION_GROUP
             description = "Run the migration"
         }
         project.task(TASK_TEST_MIGRATION) {
             group = MIGRATION_DISTRIBUTION_GROUP
             description = "Launch tests after the migration. Optional -D parameters: target.version"
+        }/*
+        startScripts {
+            doLast {
+                def winScriptFile = file getWindowsScript()
+                def winFileText = winScriptFile.text
+
+                // Remove too-long-classpath and use pathing jar instead
+                winFileText = winFileText.replaceAll('set CLASSPATH=.*', 'rem CLASSPATH declaration removed.')
+                winFileText = winFileText.replaceAll('("%JAVA_EXE%" .* -classpath ")%CLASSPATH%(" .*)', '$1%APP_HOME%\\\\lib\\\\' + pathingJar.archiveName + '$2')
+
+                winScriptFile.text = winFileText
+            }
+        }*/
+        project.task("workaroundScript") {
+            group = MIGRATION_DISTRIBUTION_GROUP
+            description = "workaround for https://issues.gradle.org/browse/GRADLE-2992"
+            doFirst {
+                println "/!\\ Using the workaround to generate windows startup script"
+                def File windowsScript = project.tasks.startScripts.getWindowsScript()
+                windowsScript.text = windowsScript.text.replaceAll('set CLASSPATH=.*','set CLASSPATH=%APP_HOME%/lib/*')
+            }
         }
     }
 
@@ -120,6 +144,7 @@ class MigrationDistribution implements Plugin<Project> {
 
         project.tasks.testMigration.dependsOn testProject.tasks.test
         project.tasks.testMigration.dependsOn project.tasks.migrate
+        project.tasks.distZip.dependsOn project.tasks.workaroundScript
         project.tasks.testMigration.dependsOn project.tasks.distZip
     }
 
