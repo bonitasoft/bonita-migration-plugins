@@ -1,6 +1,7 @@
 package org.bonitasoft.migration.plugin.dist
 
 import org.gradle.api.tasks.JavaExec
+
 /**
  * @author Baptiste Mesta
  */
@@ -21,6 +22,10 @@ class MigrateTask extends JavaExec {
         setSystemProperties testValues
         logger.info "execute migration with properties $systemProperties"
         setMain "org.bonitasoft.migration.core.Migration"
+        logger.info "using classpath:"
+        project.sourceSets.test.runtimeClasspath.each { File it ->
+            logger.info it.path
+        }
         setClasspath project.sourceSets.test.runtimeClasspath
         super.exec()
     }
