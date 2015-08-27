@@ -150,7 +150,6 @@ class MigrationDistribution implements Plugin<Project> {
 
     private defineDependencies(Project project) {
         project.dependencies {
-            compile gradleApi()
             filler "org.bonitasoft.engine:bonita-client:${project.source}"
             filler "org.bonitasoft.console:bonita-home:${project.source}:full@zip"
             project.bonitaVersions.each {
