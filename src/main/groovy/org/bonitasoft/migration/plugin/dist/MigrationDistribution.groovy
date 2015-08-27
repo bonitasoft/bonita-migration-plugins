@@ -82,24 +82,12 @@ class MigrationDistribution implements Plugin<Project> {
         project.task(TASK_TEST_MIGRATION) {
             group = MIGRATION_DISTRIBUTION_GROUP
             description = "Launch tests after the migration. Optional -D parameters: target.version"
-        }/*
-        startScripts {
-            doLast {
-                def winScriptFile = file getWindowsScript()
-                def winFileText = winScriptFile.text
-
-                // Remove too-long-classpath and use pathing jar instead
-                winFileText = winFileText.replaceAll('set CLASSPATH=.*', 'rem CLASSPATH declaration removed.')
-                winFileText = winFileText.replaceAll('("%JAVA_EXE%" .* -classpath ")%CLASSPATH%(" .*)', '$1%APP_HOME%\\\\lib\\\\' + pathingJar.archiveName + '$2')
-
-                winScriptFile.text = winFileText
-            }
-        }*/
+        }
         project.task("workaroundScript") {
             group = MIGRATION_DISTRIBUTION_GROUP
             description = "workaround for https://issues.gradle.org/browse/GRADLE-2992"
             doFirst {
-                println "/!\\ Using the workaround to generate windows startup script"
+                project.logger.warn "/!\\ Using the workaround to generate windows startup script"
                 def File windowsScript = project.tasks.startScripts.getWindowsScript()
                 windowsScript.text = windowsScript.text.replaceAll('set CLASSPATH=.*','set CLASSPATH=%APP_HOME%/lib/*')
             }
@@ -159,10 +147,10 @@ class MigrationDistribution implements Plugin<Project> {
             drivers group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
             drivers group: 'com.oracle', name: 'ojdbc', version: '6'
             drivers group: 'com.microsoft.jdbc', name: 'sqlserver', version: '4.0.2206.100'
-            compile group: 'org.postgresql', name: 'postgresql', version: '9.3-1102-jdbc41'
-            compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
-            compile group: 'com.oracle', name: 'ojdbc', version: '6'
-            compile group: 'com.microsoft.jdbc', name: 'sqlserver', version: '4.0.2206.100'
+            testRuntime group: 'org.postgresql', name: 'postgresql', version: '9.3-1102-jdbc41'
+            testRuntime group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
+            testRuntime group: 'com.oracle', name: 'ojdbc', version: '6'
+            testRuntime group: 'com.microsoft.jdbc', name: 'sqlserver', version: '4.0.2206.100'
 
         }
     }

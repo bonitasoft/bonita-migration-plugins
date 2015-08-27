@@ -21,7 +21,7 @@ class MigrateTask extends JavaExec {
         setSystemProperties testValues
         logger.info "execute migration with properties $systemProperties"
         setMain "org.bonitasoft.migration.core.Migration"
-        setClasspath project.sourceSets.main.runtimeClasspath
+        setClasspath project.sourceSets.test.runtimeClasspath
         super.exec()
     }
 }
