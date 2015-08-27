@@ -26,7 +26,6 @@ class MigrationDistribution implements Plugin<Project> {
     void apply(Project project) {
         project.mainClassName = "org.bonitasoft.migration.core.Migration"
         defineConfigurations(project)
-        defineRepositories(project)
         defineDependencies(project)
         defineTasks(project)
         defineTaskDependencies(project)
@@ -162,19 +161,6 @@ class MigrationDistribution implements Plugin<Project> {
             testRuntime group: 'com.oracle', name: 'ojdbc', version: '6'
             testRuntime group: 'com.microsoft.jdbc', name: 'sqlserver', version: '4.0.2206.100'
 
-        }
-    }
-
-    private defineRepositories(Project project) {
-        project.repositories {
-            mavenLocal()
-            def customMavenRepo = System.getProperty("maven.repository")
-            //used in jenkins: add in system property $ {JENKINS_HOME}/userContent/m2_repo and archiva
-            if (customMavenRepo != null) {
-                logger.info "using custom maven.repository: " + customMavenRepo
-                maven { url customMavenRepo }
-            }
-            mavenCentral()
         }
     }
 
