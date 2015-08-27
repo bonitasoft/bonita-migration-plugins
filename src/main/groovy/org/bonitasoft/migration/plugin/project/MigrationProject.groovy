@@ -65,9 +65,9 @@ class MigrationProject implements Plugin<Project> {
                 }
                 compile group: "org.bonitasoft.migration", name: 'bonita-migration-common', version: project.getVersion()
                 compile "${engineClientGroup}:${engineClientName}:${bonitaPreviousVersionResolved}"
-                compile "${engineTestClientGroup}:${engineTestClientName}:${bonitaPreviousVersionResolved}"
+                compile "${engineTestClientGroup}:${engineTestClientName}:${bonitaPreviousVersionResolved}${isSP ? ':tests' : ''}"
                 testCompile "${engineClientGroup}:${engineClientName}:${bonitaVersionResolved}"
-                testCompile "${engineTestClientGroup}:${engineTestClientName}:${bonitaVersionResolved}"
+                testCompile "${engineTestClientGroup}:${engineTestClientName}:${bonitaVersionResolved}${isSP ? ':tests' : ''}"
             }
 
             task(TASK_SETUP_SOURCE_ENGINE, dependsOn: 'classes', type: SetupSourceEngineTask) {
@@ -83,12 +83,6 @@ class MigrationProject implements Plugin<Project> {
             apply plugin: 'groovy'
             repositories {
                 mavenLocal()
-                def customMavenRepo = System.getProperty("maven.repository")
-                //used in jenkins: add in system property $ {JENKINS_HOME}/userContent/m2_repo and archiva
-                if (customMavenRepo != null) {
-                    logger.info "using custom maven.repository: " + customMavenRepo
-                    maven { url customMavenRepo }
-                }
                 mavenCentral()
             }
             dependencies {
@@ -104,14 +98,6 @@ class MigrationProject implements Plugin<Project> {
 
             ext.target = System.getProperty("target.version", bonitaVersions.last())
             ext.source = bonitaVersions[bonitaVersions.indexOf(project.target) - 1]
-            uploadArchives {
-                repositories {
-                    mavenDeployer {
-                        repository url: 'file://' + new File(
-                                System.getProperty('user.home'), '.m2/repository').absolutePath
-                    }
-                }
-            }
         }
     }
 }

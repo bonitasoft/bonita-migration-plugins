@@ -148,9 +148,10 @@ class MigrationDistribution implements Plugin<Project> {
     private defineDependencies(Project project) {
         project.dependencies {
             filler "org.bonitasoft.engine:bonita-client:${project.source}"
-            filler "org.bonitasoft.consolme:bonita-home:${project.source}:full@zip"
+            println "project.isSP $project.isSP"
+            filler "org.bonitasoft.console:bonita-home${project.isSP ? '-sp' : ''}:${project.source}:${project.isSP ? '' : 'full'}@zip"
             project.bonitaVersions.each {
-                add "config_$it", "org.bonitasoft.console:bonita-home:${project.overridedVersions.containsKey(it) ? project.overridedVersions.get(it) : it}:full@zip"
+                add "config_$it", "org.bonitasoft.console:bonita-home${project.isSP ? '-sp' : ''}:${project.overridedVersions.containsKey(it) ? project.overridedVersions.get(it) : it}:${project.isSP ? '' : 'full'}@zip"
             }
             drivers group: 'org.postgresql', name: 'postgresql', version: '9.3-1102-jdbc41'
             drivers group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
