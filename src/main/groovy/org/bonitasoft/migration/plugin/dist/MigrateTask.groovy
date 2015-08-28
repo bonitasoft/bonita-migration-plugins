@@ -27,6 +27,7 @@ class MigrateTask extends JavaExec {
             logger.info it.path
         }
         setClasspath project.sourceSets.test.runtimeClasspath
+        setDebug System.getProperty("migration.debug") != null
         super.exec()
     }
 }
