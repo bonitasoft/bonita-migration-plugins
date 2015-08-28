@@ -92,6 +92,10 @@ class MigrationDistribution implements Plugin<Project> {
             }
         }
         project.tasks.clean.doLast {
+            project.projectDir.eachFile {
+                if(it.isFile() && it.name.startsWith("migration-") && it.name.endsWith(".log"))
+                    it.delete()
+            }
             def homesDirectory = new File(project.projectDir, "src/main/resources/homes")
             if (homesDirectory.exists())
                 homesDirectory.eachFile {
