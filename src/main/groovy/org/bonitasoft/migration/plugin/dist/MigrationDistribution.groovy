@@ -148,7 +148,6 @@ class MigrationDistribution implements Plugin<Project> {
     private defineDependencies(Project project) {
         project.dependencies {
             filler "org.bonitasoft.engine:bonita-client:${project.source}"
-            println "project.isSP $project.isSP"
             filler "org.bonitasoft.console:bonita-home${project.isSP ? '-sp' : ''}:${project.source}:${project.isSP ? '' : 'full'}@zip"
             project.bonitaVersions.each {
                 add "config_$it", "org.bonitasoft.console:bonita-home${project.isSP ? '-sp' : ''}:${project.overridedVersions.containsKey(it) ? project.overridedVersions.get(it) : it}:${project.isSP ? '' : 'full'}@zip"
