@@ -13,7 +13,7 @@ class SetupSourceEngineTask extends JavaExec {
     void exec() {
         setDescription "Setup the engine in order to run migration tests on it."
         setMain "org.bonitasoft.migration.filler.FillerRunner"
-        args "org.bonitasoft.migration.FillBeforeMigratingTo${project.isSP ? 'SP' : ''}" + project.bonitaVersionUnderScore
+        args "${project.isSP ? 'com' : 'org'}.bonitasoft.migration.FillBeforeMigratingTo${project.isSP ? 'SP' : ''}" + project.bonitaVersionUnderScore
         setClasspath project.sourceSets.main.runtimeClasspath
         setDebug System.getProperty("filler.debug") != null
         super.exec()
