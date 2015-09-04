@@ -38,7 +38,7 @@ class MigrationDistribution implements Plugin<Project> {
 
     @Override
     void apply(Project project) {
-        project.mainClassName = "org.bonitasoft.migration.core.Migration"
+        project.mainClassName = "${project.isSP ? 'com' : 'org'}.bonitasoft.migration.core.Migration"
         defineConfigurations(project)
         defineDependencies(project)
         defineTasks(project)
@@ -55,6 +55,7 @@ class MigrationDistribution implements Plugin<Project> {
 
 
     }
+
 
     private void defineTasks(Project project) {
         //Define tasks
@@ -107,7 +108,7 @@ class MigrationDistribution implements Plugin<Project> {
         }
         project.tasks.clean.doLast {
             project.projectDir.eachFile {
-                if(it.isFile() && it.name.startsWith("migration-") && it.name.endsWith(".log"))
+                if (it.isFile() && it.name.startsWith("migration-") && it.name.endsWith(".log"))
                     it.delete()
             }
             def homesDirectory = new File(project.projectDir, "src/main/resources/homes")
