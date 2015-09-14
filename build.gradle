@@ -14,3 +14,11 @@ dependencies {
     compile gradleApi()
     compile localGroovy()
 }
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: System.getProperty("altDeploymentRepository"))
+        }
+    }
+}
