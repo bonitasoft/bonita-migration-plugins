@@ -63,10 +63,9 @@ class MigrationDistribution implements Plugin<Project> {
             group = MIGRATION_DISTRIBUTION_GROUP
             description = "Get all bonita home for each version and put it in the distribution"
             project.bonitaVersions.collect { version ->
-                println project.configurations."config_$version".files[0].getAbsolutePath()
                 from (project.configurations."config_$version".files[0].getParent()) {
                     include project.configurations."config_$version".files[0].getName()
-                    rename 'bonita-home-(sp-)?([0-9\\.]+)(-[A-Z1-9]+)?(-full)?.zip','bonita-home-$1$2$4.zip'
+                    rename 'bonita-home-(sp-)?([0-9\\.]+[0-9])(.[A-Z1-9]+)?(-full)?.zip','bonita-home-$1$2$4.zip'
                 }
             }
             into new File(project.projectDir, 'src/main/resources/homes')
