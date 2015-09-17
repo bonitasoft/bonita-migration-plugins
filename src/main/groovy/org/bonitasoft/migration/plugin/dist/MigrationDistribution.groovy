@@ -18,6 +18,7 @@ import org.bonitasoft.migration.plugin.MigrationConstants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.testing.Test
 
 /**
  *
@@ -138,9 +139,17 @@ class MigrationDistribution implements Plugin<Project> {
         testProject.tasks.setupSourceEngine {
             doFirst setSystemPropertiesForEngine
         }
-        testProject.tasks.test {
+
+        testProject.task(TASK_TEST_MIGRATION, type: Test) {
+            description = "Launch tests after the migration. Optional -D parameters: target.version"
+            testClassesDir = testProject.sourceSets.test.output.classesDir
+            classpath = testProject.sourceSets.test.runtimeClasspath
+        }
+
+        testProject.tasks.testMigration {
             doFirst setSystemPropertiesForEngine
         }
+
         //Define task flow
         project.tasks.migrate.dependsOn project.tasks.unpackBonitaHomeSource
         project.tasks.migrate.dependsOn {
@@ -159,7 +168,7 @@ class MigrationDistribution implements Plugin<Project> {
 
         project.tasks.migrate.dependsOn testProject.tasks.setupSourceEngine
 
-        project.tasks.testMigration.dependsOn testProject.tasks.test
+        project.tasks.testMigration.dependsOn testProject.tasks.testMigration
         project.tasks.testMigration.dependsOn project.tasks.migrate
         project.tasks.testMigration.dependsOn project.tasks.distZip
     }
