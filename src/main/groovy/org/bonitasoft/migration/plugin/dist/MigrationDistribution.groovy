@@ -36,11 +36,13 @@ class MigrationDistribution implements Plugin<Project> {
     static final String TASK_UNPACK_BONITA_HOME = "unpackBonitaHomeSource"
     static final String TASK_MIGRATE = "migrate"
     static final String TASK_TEST_MIGRATION = "testMigration"
+    static final String TASK_INTEGRATION_TEST = "integrationTest"
 
     @Override
     void apply(Project project) {
         project.mainClassName = "${project.isSP ? 'com' : 'org'}.bonitasoft.migration.core.Migration"
         defineConfigurations(project)
+        defineExtraSourceSets(project)
         defineDependencies(project)
         defineTasks(project)
         defineTaskDependencies(project)
@@ -107,6 +109,12 @@ class MigrationDistribution implements Plugin<Project> {
                 windowsScript.text = windowsScript.text.replaceAll('set CLASSPATH=.*', 'set CLASSPATH=%APP_HOME%/lib/*')
             }
         }
+        project.task(TASK_INTEGRATION_TEST, type: Test) {
+            testClassesDir = project.sourceSets.integrationTest.output.classesDir
+            classpath = project.sourceSets.integrationTest.runtimeClasspath
+            reports.html.destination = project.file("${project.buildDir}/reports/integrationTests")
+        }
+
         project.tasks.clean.doLast {
             project.projectDir.eachFile {
                 if (it.isFile() && it.name.startsWith("migration-") && it.name.endsWith(".log"))
@@ -189,6 +197,11 @@ class MigrationDistribution implements Plugin<Project> {
             testRuntime group: 'com.oracle', name: 'ojdbc', version: '6'
             testRuntime group: 'com.microsoft.jdbc', name: 'sqlserver', version: '4.0.2206.100'
 
+            integrationTestCompile project.sourceSets.main.output
+            integrationTestCompile project.configurations.testCompile
+            integrationTestCompile project.sourceSets.test.output
+            integrationTestRuntime project.configurations.testRuntime
+
         }
     }
 
@@ -199,6 +212,16 @@ class MigrationDistribution implements Plugin<Project> {
             drivers
         }
     }
+
+    private defineExtraSourceSets(Project project) {
+        project.sourceSets {
+            integrationTest {
+                groovy.srcDir project.file('src/it/groovy')
+                resources.srcDir project.file('src/it/resources')
+            }
+        }
+    }
+
 
     private static Project getTestProject(Project project, target) {
         def testProject = project.rootProject.subprojects.find {
