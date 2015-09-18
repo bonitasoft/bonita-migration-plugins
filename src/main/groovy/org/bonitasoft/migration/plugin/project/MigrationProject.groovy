@@ -74,6 +74,11 @@ class MigrationProject implements Plugin<Project> {
                 group = MIGRATION_PROJECT_GROUP
             }
             tasks.setupSourceEngine.dependsOn tasks.jar
+
+            // tests related to migration tests should be executed only using testMigration task
+            tasks.test {
+                exclude '**'
+            }
         }
     }
 
