@@ -3,6 +3,7 @@ package org.bonitasoft.migration.plugin.project
 import org.bonitasoft.migration.plugin.MigrationConstants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.jvm.tasks.Jar
 
 /**
  *
@@ -35,6 +36,8 @@ class MigrationProject implements Plugin<Project> {
             it.name.startsWith(MigrationConstants.MIGRATION_PREFIX)
         }) {
 
+            testProject ->
+
             ext {
                 bonitaVersionUnderScore = name.substring(MigrationConstants.MIGRATION_PREFIX.length())
                 isSP = bonitaVersionUnderScore.startsWith('SP')
@@ -46,34 +49,49 @@ class MigrationProject implements Plugin<Project> {
                 previousVersion = bonitaVersions[bonitaVersions.indexOf(bonitaVersion) - 1]
                 previousVersionUnderScore = previousVersion.replace('.', '_')
                 bonitaPreviousVersionResolved = overridedVersions.containsKey(previousVersion) ? overridedVersions.get(previousVersion) : previousVersion
-            }
-            dependencies {
-                String engineClientGroup
-                String engineClientName
-                String engineTestClientGroup
-                String engineTestClientName
-                if (isSP) {
-                    engineClientGroup = "com.bonitasoft.engine"
-                    engineClientName = "bonita-client-sp"
-                    engineTestClientGroup = "com.bonitasoft.engine.test"
-                    engineTestClientName = "bonita-integration-tests-local-sp"
-                } else {
-                    engineClientGroup = "org.bonitasoft.engine"
-                    engineClientName = "bonita-client"
-                    engineTestClientGroup = "org.bonitasoft.engine.test"
-                    engineTestClientName = "bonita-server-test-utils"
+                dependencies {
+                    String engineClientGroup
+                    String engineClientName
+                    String engineTestClientGroup
+                    String engineTestClientName
+                    if (isSP) {
+                        engineClientGroup = "com.bonitasoft.engine"
+                        engineClientName = "bonita-client-sp"
+                        engineTestClientGroup = "com.bonitasoft.engine.test"
+                        engineTestClientName = "bonita-integration-tests-local-sp"
+                        testCompile "org.bonitasoft.migration:migrateTo_${bonitaVersionUnderScore}:${project.version}:tests"
+                    } else {
+                        engineClientGroup = "org.bonitasoft.engine"
+                        engineClientName = "bonita-client"
+                        engineTestClientGroup = "org.bonitasoft.engine.test"
+                        engineTestClientName = "bonita-server-test-utils"
+                    }
+                    compile group: "org.bonitasoft.migration", name: 'bonita-migration-common', version: project.getVersion()
+                    compile "${engineClientGroup}:${engineClientName}:${bonitaPreviousVersionResolved}"
+                    compile "${engineTestClientGroup}:${engineTestClientName}:${bonitaPreviousVersionResolved}${isSP ? ':tests' : ''}"
+                    testCompile "${engineClientGroup}:${engineClientName}:${bonitaVersionResolved}"
+                    testCompile "${engineTestClientGroup}:${engineTestClientName}:${bonitaVersionResolved}${isSP ? ':tests' : ''}"
+
+
                 }
-                compile group: "org.bonitasoft.migration", name: 'bonita-migration-common', version: project.getVersion()
-                compile "${engineClientGroup}:${engineClientName}:${bonitaPreviousVersionResolved}"
-                compile "${engineTestClientGroup}:${engineTestClientName}:${bonitaPreviousVersionResolved}${isSP ? ':tests' : ''}"
-                testCompile "${engineClientGroup}:${engineClientName}:${bonitaVersionResolved}"
-                testCompile "${engineTestClientGroup}:${engineTestClientName}:${bonitaVersionResolved}${isSP ? ':tests' : ''}"
             }
+
+            task ("testJar",type: Jar) {
+                classifier = 'tests'
+                from testProject.sourceSets.test.output
+            }
+
+            artifacts {
+                archives tasks.testJar
+            }
+
 
             task(TASK_SETUP_SOURCE_ENGINE, dependsOn: 'classes', type: SetupSourceEngineTask) {
                 group = MIGRATION_PROJECT_GROUP
             }
             tasks.setupSourceEngine.dependsOn tasks.jar
+
+            tasks.install.dependsOn tasks.testJar
 
             // tests related to migration tests should be executed only using testMigration task
             tasks.test {
@@ -105,4 +123,6 @@ class MigrationProject implements Plugin<Project> {
             ext.source = bonitaVersions[bonitaVersions.indexOf(project.target) - 1]
         }
     }
+
+
 }
