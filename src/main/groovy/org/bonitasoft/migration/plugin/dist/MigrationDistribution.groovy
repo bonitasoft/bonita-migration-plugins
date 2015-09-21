@@ -154,6 +154,10 @@ class MigrationDistribution implements Plugin<Project> {
             classpath = testProject.sourceSets.test.runtimeClasspath
         }
 
+        project.tasks.integrationTest {
+            doFirst setSystemPropertiesForEngine
+        }
+
         testProject.tasks.testMigration {
             doFirst setSystemPropertiesForEngine
         }
@@ -179,6 +183,7 @@ class MigrationDistribution implements Plugin<Project> {
         project.tasks.testMigration.dependsOn testProject.tasks.testMigration
         project.tasks.testMigration.dependsOn project.tasks.migrate
         project.tasks.testMigration.dependsOn project.tasks.distZip
+        project.tasks.integrationTest.dependsOn project.tasks.cleandb
     }
 
     private defineDependencies(Project project) {
