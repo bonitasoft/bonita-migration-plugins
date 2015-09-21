@@ -27,7 +27,7 @@ class AddVersionsToTheDistributionTask extends DefaultTask {
 
     @Override
     String getDescription() {
-        return "Add available version in the configuration file of the ditribution"
+        return "Add available version in the configuration file of the distribution"
     }
 
     @TaskAction
