@@ -136,11 +136,11 @@ class MigrationDistribution implements Plugin<Project> {
         Project testProject = getTestProject(project, project.target)
         def setSystemPropertiesForEngine = {
             systemProperties = [
-                    "dbvendor"     : String.valueOf(project.database.properties.dbvendor),
-                    "dburl"        : String.valueOf(project.database.properties.dburl),
-                    "dbuser"       : String.valueOf(project.database.properties.dbuser),
-                    "dbpassword"   : String.valueOf(project.database.properties.dbpassword),
-                    "dbdriverClass": String.valueOf(project.database.properties.dbdriverClass),
+                    "db.vendor"     : String.valueOf(project.database.properties.dbvendor),
+                    "db.url"        : String.valueOf(project.database.properties.dburl),
+                    "db.user"       : String.valueOf(project.database.properties.dbuser),
+                    "db.password"   : String.valueOf(project.database.properties.dbpassword),
+                    "db.driverClass": String.valueOf(project.database.properties.dbdriverClass),
                     "bonita.home"  : String.valueOf(project.rootProject.buildDir.absolutePath + File.separator + "bonita-home"),
             ]
         }
