@@ -59,7 +59,9 @@ class MigrationProject implements Plugin<Project> {
                         engineClientName = "bonita-client-sp"
                         engineTestClientGroup = "com.bonitasoft.engine.test"
                         engineTestClientName = "bonita-integration-tests-local-sp"
+                        compile "org.bonitasoft.migration:migrateTo_${bonitaVersionUnderScore}:${project.version}"
                         testCompile "org.bonitasoft.migration:migrateTo_${bonitaVersionUnderScore}:${project.version}:tests"
+
                     } else {
                         engineClientGroup = "org.bonitasoft.engine"
                         engineClientName = "bonita-client"
