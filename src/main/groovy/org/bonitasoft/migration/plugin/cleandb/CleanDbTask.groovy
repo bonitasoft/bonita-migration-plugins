@@ -50,16 +50,10 @@ class CleanDbTask extends DefaultTask {
                 cleanSqlServerDb(properties)
                 break
             case "postgres":
-                def databaseName
-                def genericUrl
-                (databaseName, genericUrl) = extractDataBaseNameAndGenericUrl(properties)
-                cleanPostgresDb(databaseName, properties, genericUrl)
+                cleanPostgresDb(properties)
                 break
             case "mysql":
-                def databaseName
-                def genericUrl
-                (databaseName, genericUrl) = extractDataBaseNameAndGenericUrl(properties)
-                cleanMysqlDb(genericUrl, properties, databaseName)
+                cleanMysqlDb(properties)
                 break
         }
     }
@@ -77,7 +71,9 @@ class CleanDbTask extends DefaultTask {
         [databaseName, genericUrl]
     }
 
-    private void cleanMysqlDb(genericUrl, CleanDbPluginExtension properties, databaseName) {
+    private void cleanMysqlDb(CleanDbPluginExtension properties) {
+        def (databaseName, genericUrl) = extractDataBaseNameAndGenericUrl(properties)
+
         def Sql sql = Sql.newInstance(genericUrl, properties.dbuser, properties.dbpassword, properties.dbdriverClass)
         try {
             sql.executeUpdate("drop database " + databaseName)
@@ -89,8 +85,8 @@ class CleanDbTask extends DefaultTask {
         sql.close()
     }
 
-    private void cleanPostgresDb(databaseName, CleanDbPluginExtension properties, genericUrl) {
-
+    private void cleanPostgresDb(CleanDbPluginExtension properties) {
+        def (databaseName, genericUrl) = extractDataBaseNameAndGenericUrl(properties)
 
         if (properties.dbRootUser == null || properties.dbRootUser.isEmpty() || properties.dbRootPassword == null || properties.dbRootPassword.isEmpty()) {
             throw new IllegalStateException("must specify db.root.user and db.root.password for postgres")
