@@ -14,7 +14,6 @@
 
 package org.bonitasoft.migration.plugin.dist
 
-import org.bonitasoft.migration.plugin.MigrationConstants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
@@ -33,10 +32,8 @@ class MigrationDistribution implements Plugin<Project> {
 
     static final String TASK_ADD_BONITA_HOMES = "addBonitaHomes"
     static final String TASK_ADD_VERSION_IN_DIST = "addVersionsToTheDistribution"
-    static final String TASK_UNPACK_BONITA_HOME = "unpackBonitaHomeSource"
-    static final String TASK_MIGRATE = "migrate"
-    static final String TASK_TEST_MIGRATION = "testMigration"
     static final String TASK_INTEGRATION_TEST = "integrationTest"
+
 
     @Override
     void apply(Project project) {
@@ -55,8 +52,6 @@ class MigrationDistribution implements Plugin<Project> {
                 }
             }
         }
-
-
     }
 
 
@@ -79,27 +74,6 @@ class MigrationDistribution implements Plugin<Project> {
             versionsToAdd = project.bonitaVersions
             propertiesFile = new File(project.projectDir, 'src/main/resources/bonita-versions.properties')
         }
-        project.task(TASK_UNPACK_BONITA_HOME, type: Copy) {
-            group = MIGRATION_DISTRIBUTION_GROUP
-            description = "Unpack the bonita home to run the migration"
-            doFirst {
-                logger.info("Unpack bonita home in version ${project.source}")
-            }
-            from {
-                def conf = project.configurations."config_${project.source}"
-                project.zipTree(conf.files[0].getAbsolutePath())
-            }
-            into project.rootProject.buildDir
-
-        }
-        project.task(TASK_MIGRATE, type: MigrateTask) {
-            group = MIGRATION_DISTRIBUTION_GROUP
-            description = "Run the migration"
-        }
-        project.task(TASK_TEST_MIGRATION) {
-            group = MIGRATION_DISTRIBUTION_GROUP
-            description = "Launch tests after the migration. Optional -D parameters: target.version"
-        }
         project.task("workaroundScript") {
             group = MIGRATION_DISTRIBUTION_GROUP
             description = "workaround for https://issues.gradle.org/browse/GRADLE-2992"
@@ -116,10 +90,6 @@ class MigrationDistribution implements Plugin<Project> {
         }
 
         project.tasks.clean.doLast {
-            project.projectDir.eachFile {
-                if (it.isFile() && it.name.startsWith("migration-") && it.name.endsWith(".log"))
-                    it.delete()
-            }
             def homesDirectory = new File(project.projectDir, "src/main/resources/homes")
             if (homesDirectory.exists())
                 homesDirectory.eachFile {
@@ -133,7 +103,6 @@ class MigrationDistribution implements Plugin<Project> {
 
     private void defineTaskDependencies(Project project) {
 
-        Project testProject = getTestProject(project, project.target)
         def setSystemPropertiesForEngine = {
             systemProperties = [
                     "db.vendor"     : String.valueOf(project.database.properties.dbvendor),
@@ -141,55 +110,22 @@ class MigrationDistribution implements Plugin<Project> {
                     "db.user"       : String.valueOf(project.database.properties.dbuser),
                     "db.password"   : String.valueOf(project.database.properties.dbpassword),
                     "db.driverClass": String.valueOf(project.database.properties.dbdriverClass),
-                    "bonita.home"   : String.valueOf(project.rootProject.buildDir.absolutePath + File.separator + "bonita-home"),
+                    "bonita.home"  : String.valueOf(project.rootProject.buildDir.absolutePath + File.separator + "bonita-home"),
             ]
-        }
-        testProject.tasks.setupSourceEngine {
-            doFirst setSystemPropertiesForEngine
-        }
-
-        testProject.task(TASK_TEST_MIGRATION, type: Test) {
-            description = "Launch tests after the migration. Optional -D parameters: target.version"
-            testClassesDir = testProject.sourceSets.test.output.classesDir
-            classpath = testProject.sourceSets.test.runtimeClasspath
         }
 
         project.tasks.integrationTest {
             doFirst setSystemPropertiesForEngine
         }
-
-        testProject.tasks.testMigration {
-            doFirst setSystemPropertiesForEngine
-        }
-
-        //Define task flow
-        project.tasks.migrate.dependsOn project.tasks.unpackBonitaHomeSource
-        project.tasks.migrate.dependsOn {
-            def sourceFiller = project.rootProject.subprojects.find {
-                it.name.startsWith(MigrationConstants.MIGRATION_PREFIX) && it.name.endsWith(project.target.replace('.', '_'))
-            }
-            sourceFiller.tasks.setupSourceEngine
-        }
         project.tasks.processResources.dependsOn project.tasks.addBonitaHomes
         project.tasks.processResources.dependsOn project.tasks.addVersionsToTheDistribution
         project.tasks.distTar.dependsOn project.tasks.workaroundScript
-
-        project.tasks.unpackBonitaHomeSource.dependsOn project.tasks.jar
-        testProject.tasks.setupSourceEngine.dependsOn project.tasks.unpackBonitaHomeSource
-        testProject.tasks.setupSourceEngine.dependsOn project.tasks.cleandb
-
-        project.tasks.migrate.dependsOn testProject.tasks.setupSourceEngine
-
-        project.tasks.testMigration.dependsOn testProject.tasks.testMigration
-        project.tasks.testMigration.dependsOn project.tasks.migrate
-        project.tasks.testMigration.dependsOn project.tasks.distZip
         project.tasks.integrationTest.dependsOn project.tasks.cleandb
+        project.tasks.check.dependsOn project.tasks.integrationTest
     }
 
     private defineDependencies(Project project) {
         project.dependencies {
-            filler "org.bonitasoft.engine:bonita-client:${project.source}"
-            filler "org.bonitasoft.console:bonita-home${project.isSP ? '-sp' : ''}:${project.source}:${project.isSP ? '' : 'full'}@zip"
             project.bonitaVersions.each {
                 add "config_$it", "org.bonitasoft.console:bonita-home${project.isSP ? '-sp' : ''}:${project.overridedVersions.containsKey(it) ? project.overridedVersions.get(it) : it}:${project.isSP ? '' : 'full'}@zip"
             }
@@ -199,8 +135,6 @@ class MigrationDistribution implements Plugin<Project> {
             drivers group: 'com.microsoft.jdbc', name: 'sqlserver', version: '4.0.2206.100'
             compile group: 'org.postgresql', name: 'postgresql', version: '9.3-1102-jdbc41'
             compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
-            testRuntime group: 'com.oracle', name: 'ojdbc', version: '6'
-            testRuntime group: 'com.microsoft.jdbc', name: 'sqlserver', version: '4.0.2206.100'
 
             integrationTestCompile project.sourceSets.main.output
             integrationTestCompile project.configurations.testCompile
@@ -212,7 +146,6 @@ class MigrationDistribution implements Plugin<Project> {
 
     private defineConfigurations(Project project) {
         project.configurations {
-            filler
             project.bonitaVersions.collect { "config_$it" }.each { create it }
             drivers
         }
@@ -225,14 +158,5 @@ class MigrationDistribution implements Plugin<Project> {
                 resources.srcDir project.file('src/it/resources')
             }
         }
-    }
-
-
-    private static Project getTestProject(Project project, target) {
-        def testProject = project.rootProject.subprojects.find {
-            it.name.startsWith('migrateTo') && it.name.endsWith(target.replace('.', '_'))
-        }
-        if (!testProject) project.logger.error "\n/!\\ Cannot find Tests for migration step to " + target + " /!\\ Did you create migration module migrateTo_" + target.replace('.', '_') + " ?"
-        return testProject
     }
 }
