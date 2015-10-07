@@ -18,6 +18,7 @@ import org.bonitasoft.migration.plugin.MigrationConstants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
+import org.gradle.api.tasks.testing.Test
 
 /**
  *
@@ -35,11 +36,13 @@ class MigrationDistribution implements Plugin<Project> {
     static final String TASK_UNPACK_BONITA_HOME = "unpackBonitaHomeSource"
     static final String TASK_MIGRATE = "migrate"
     static final String TASK_TEST_MIGRATION = "testMigration"
+    static final String TASK_INTEGRATION_TEST = "integrationTest"
 
     @Override
     void apply(Project project) {
         project.mainClassName = "${project.isSP ? 'com' : 'org'}.bonitasoft.migration.core.Migration"
         defineConfigurations(project)
+        defineExtraSourceSets(project)
         defineDependencies(project)
         defineTasks(project)
         defineTaskDependencies(project)
@@ -106,6 +109,12 @@ class MigrationDistribution implements Plugin<Project> {
                 windowsScript.text = windowsScript.text.replaceAll('set CLASSPATH=.*', 'set CLASSPATH=%APP_HOME%/lib/*')
             }
         }
+        project.task(TASK_INTEGRATION_TEST, type: Test) {
+            testClassesDir = project.sourceSets.integrationTest.output.classesDir
+            classpath = project.sourceSets.integrationTest.runtimeClasspath
+            reports.html.destination = project.file("${project.buildDir}/reports/integrationTests")
+        }
+
         project.tasks.clean.doLast {
             project.projectDir.eachFile {
                 if (it.isFile() && it.name.startsWith("migration-") && it.name.endsWith(".log"))
@@ -127,20 +136,32 @@ class MigrationDistribution implements Plugin<Project> {
         Project testProject = getTestProject(project, project.target)
         def setSystemPropertiesForEngine = {
             systemProperties = [
-                    "dbvendor"     : String.valueOf(project.database.properties.dbvendor),
-                    "dburl"        : String.valueOf(project.database.properties.dburl),
-                    "dbuser"       : String.valueOf(project.database.properties.dbuser),
-                    "dbpassword"   : String.valueOf(project.database.properties.dbpassword),
-                    "dbdriverClass": String.valueOf(project.database.properties.dbdriverClass),
+                    "db.vendor"     : String.valueOf(project.database.properties.dbvendor),
+                    "db.url"        : String.valueOf(project.database.properties.dburl),
+                    "db.user"       : String.valueOf(project.database.properties.dbuser),
+                    "db.password"   : String.valueOf(project.database.properties.dbpassword),
+                    "db.driverClass": String.valueOf(project.database.properties.dbdriverClass),
                     "bonita.home"  : String.valueOf(project.rootProject.buildDir.absolutePath + File.separator + "bonita-home"),
             ]
         }
         testProject.tasks.setupSourceEngine {
             doFirst setSystemPropertiesForEngine
         }
-        testProject.tasks.test {
+
+        testProject.task(TASK_TEST_MIGRATION, type: Test) {
+            description = "Launch tests after the migration. Optional -D parameters: target.version"
+            testClassesDir = testProject.sourceSets.test.output.classesDir
+            classpath = testProject.sourceSets.test.runtimeClasspath
+        }
+
+        project.tasks.integrationTest {
             doFirst setSystemPropertiesForEngine
         }
+
+        testProject.tasks.testMigration {
+            doFirst setSystemPropertiesForEngine
+        }
+
         //Define task flow
         project.tasks.migrate.dependsOn project.tasks.unpackBonitaHomeSource
         project.tasks.migrate.dependsOn {
@@ -159,9 +180,10 @@ class MigrationDistribution implements Plugin<Project> {
 
         project.tasks.migrate.dependsOn testProject.tasks.setupSourceEngine
 
-        project.tasks.testMigration.dependsOn testProject.tasks.test
+        project.tasks.testMigration.dependsOn testProject.tasks.testMigration
         project.tasks.testMigration.dependsOn project.tasks.migrate
         project.tasks.testMigration.dependsOn project.tasks.distZip
+        project.tasks.integrationTest.dependsOn project.tasks.cleandb
     }
 
     private defineDependencies(Project project) {
@@ -180,6 +202,11 @@ class MigrationDistribution implements Plugin<Project> {
             testRuntime group: 'com.oracle', name: 'ojdbc', version: '6'
             testRuntime group: 'com.microsoft.jdbc', name: 'sqlserver', version: '4.0.2206.100'
 
+            integrationTestCompile project.sourceSets.main.output
+            integrationTestCompile project.configurations.testCompile
+            integrationTestCompile project.sourceSets.test.output
+            integrationTestRuntime project.configurations.testRuntime
+
         }
     }
 
@@ -190,6 +217,16 @@ class MigrationDistribution implements Plugin<Project> {
             drivers
         }
     }
+
+    private defineExtraSourceSets(Project project) {
+        project.sourceSets {
+            integrationTest {
+                groovy.srcDir project.file('src/it/groovy')
+                resources.srcDir project.file('src/it/resources')
+            }
+        }
+    }
+
 
     private static Project getTestProject(Project project, target) {
         def testProject = project.rootProject.subprojects.find {
