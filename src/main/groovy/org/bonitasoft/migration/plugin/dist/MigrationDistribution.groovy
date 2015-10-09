@@ -232,6 +232,7 @@ class MigrationDistribution implements Plugin<Project> {
         def testProject = project.rootProject.subprojects.find {
             it.name.startsWith('migrateTo') && it.name.endsWith(target.replace('.', '_'))
         }
+        if (!testProject) project.logger.error "\n/!\\ Cannot find Tests for migration step to " + target + " /!\\ Did you create migration module migrateTo_" + target.replace('.', '_') + " ?"
         return testProject
     }
 }
