@@ -1,4 +1,4 @@
-package org.bonitasoft.migration.plugin.project
+package org.bonitasoft.migration.plugin.testmigration
 
 import org.gradle.api.tasks.JavaExec
 
