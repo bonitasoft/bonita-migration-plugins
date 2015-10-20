@@ -12,7 +12,7 @@
  * Floor, Boston, MA 02110-1301, USA.
  **/
 
-package org.bonitasoft.migration.plugin.dist
+package org.bonitasoft.migration.plugin.testmigration
 
 import org.gradle.api.tasks.JavaExec
 
