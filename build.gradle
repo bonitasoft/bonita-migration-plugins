@@ -14,7 +14,7 @@ configurations {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     compile gradleApi()
-    compile localGroovy()
+    compile "org.codehaus.groovy:groovy-all:2.4.4"
     deployerJars "org.apache.maven.wagon:wagon-http:2.2"
 }
 uploadArchives {

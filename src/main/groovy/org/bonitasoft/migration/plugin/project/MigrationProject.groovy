@@ -32,7 +32,7 @@ class MigrationProject implements Plugin<Project> {
                 mavenCentral()
             }
             dependencies {
-                compile localGroovy()
+                compile "org.codehaus.groovy:groovy-all:2.4.4"
                 testCompile "junit:junit:4.12"
             }
         }
