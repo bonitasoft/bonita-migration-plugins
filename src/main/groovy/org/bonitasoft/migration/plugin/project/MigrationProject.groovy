@@ -73,8 +73,8 @@ class MigrationProject implements Plugin<Project> {
                     compile "${engineTestClientGroup}:${engineTestClientName}:${bonitaPreviousVersionResolved}${isSP ? ':tests' : ''}"
                     testCompile "${engineClientGroup}:${engineClientName}:${bonitaVersionResolved}"
                     testCompile "${engineTestClientGroup}:${engineTestClientName}:${bonitaVersionResolved}${isSP ? ':tests' : ''}"
-
-
+                    testRuntime 'com.oracle:ojdbc:6'
+                    testRuntime 'com.microsoft.jdbc:sqlserver:4.0.2206.100'
                 }
             }
 
