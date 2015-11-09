@@ -19,8 +19,6 @@ class MigrationProject implements Plugin<Project> {
         project.extensions.create("migrationConf", MigrationProjectExtension)
         configureAllProjects(project)
         configureSubProjects(project)
-    }
-
     private configureSubProjects(Project project) {
         project.subprojects {
             apply plugin: 'groovy'
@@ -31,6 +29,9 @@ class MigrationProject implements Plugin<Project> {
             dependencies {
                 compile "org.codehaus.groovy:groovy-all:2.4.4"
                 testCompile "junit:junit:4.12"
+                testRuntime 'com.oracle:ojdbc:6'
+                testRuntime 'com.microsoft.jdbc:sqlserver:4.0.2206.100'
+
             }
         }
     }
