@@ -2,6 +2,7 @@ package org.bonitasoft.migration.plugin.project
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+
 /**
  *
  *
@@ -19,6 +20,9 @@ class MigrationProject implements Plugin<Project> {
         project.extensions.create("migrationConf", MigrationProjectExtension)
         configureAllProjects(project)
         configureSubProjects(project)
+    }
+
+
     private configureSubProjects(Project project) {
         project.subprojects {
             apply plugin: 'groovy'
