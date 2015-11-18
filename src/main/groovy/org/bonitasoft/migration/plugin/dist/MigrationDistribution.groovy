@@ -100,15 +100,7 @@ class MigrationDistribution implements Plugin<Project> {
             group = MIGRATION_DISTRIBUTION_GROUP
             description = "Launch tests after the migration. Optional -D parameters: target.version"
         }
-        project.task("workaroundScript") {
-            group = MIGRATION_DISTRIBUTION_GROUP
-            description = "workaround for https://issues.gradle.org/browse/GRADLE-2992"
-            doFirst {
-                project.logger.warn "/!\\ Using the workaround to generate windows startup script"
-                def File windowsScript = project.tasks.startScripts.getWindowsScript()
-                windowsScript.text = windowsScript.text.replaceAll('set CLASSPATH=.*', 'set CLASSPATH=%APP_HOME%/lib/*')
-            }
-        }
+
         project.task(TASK_INTEGRATION_TEST, type: Test) {
             testClassesDir = project.sourceSets.integrationTest.output.classesDir
             classpath = project.sourceSets.integrationTest.runtimeClasspath
@@ -172,7 +164,6 @@ class MigrationDistribution implements Plugin<Project> {
         }
         project.tasks.processResources.dependsOn project.tasks.addBonitaHomes
         project.tasks.processResources.dependsOn project.tasks.addVersionsToTheDistribution
-        project.tasks.distTar.dependsOn project.tasks.workaroundScript
 
         project.tasks.unpackBonitaHomeSource.dependsOn project.tasks.jar
         testProject.tasks.setupSourceEngine.dependsOn project.tasks.unpackBonitaHomeSource
