@@ -1,5 +1,6 @@
 package org.bonitasoft.migration.plugin.testmigration
 
+import com.github.zafarkhaja.semver.Version
 import org.bonitasoft.migration.plugin.MigrationConstants
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -100,7 +101,7 @@ class TestMigration implements Plugin<Project> {
                     "db.user"       : String.valueOf(project.database.properties.dbuser),
                     "db.password"   : String.valueOf(project.database.properties.dbpassword),
                     "db.driverClass": String.valueOf(project.database.properties.dbdriverClass),
-                    "bonita.home"  : String.valueOf(project.rootProject.buildDir.absolutePath + File.separator + "bonita-home"),
+                    "bonita.home"   : String.valueOf(project.rootProject.buildDir.absolutePath + File.separator + "bonita-home"),
             ]
         }
         project.tasks.setupSourceEngine {
@@ -144,8 +145,9 @@ class TestMigration implements Plugin<Project> {
             compile "${engineTestClientGroup}:${engineTestClientName}:${project.bonitaPreviousVersionResolved}${project.isSP ? ':tests' : ''}"
             testCompile "${engineClientGroup}:${engineClientName}:${project.bonitaVersionResolved}"
             testCompile "${engineTestClientGroup}:${engineTestClientName}:${project.bonitaVersionResolved}${project.isSP ? ':tests' : ''}"
-            filler "org.bonitasoft.console:bonita-home${project.isSP ? '-sp' : ''}:${project.bonitaPreviousVersionResolved}:${project.isSP ? '' : 'full'}@zip"
-
+            if (Version.valueOf(project.bonitaPreviousVersionResolved) < Version.valueOf("7.3.0")) {
+                filler "org.bonitasoft.console:bonita-home${project.isSP ? '-sp' : ''}:${project.bonitaPreviousVersionResolved}:${project.isSP ? '' : 'full'}@zip"
+            }
             drivers group: 'org.postgresql', name: 'postgresql', version: '9.3-1102-jdbc41'
             drivers group: 'mysql', name: 'mysql-connector-java', version: '5.1.26'
             drivers group: 'com.oracle', name: 'ojdbc', version: '6'

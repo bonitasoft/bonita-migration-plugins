@@ -14,6 +14,7 @@
 
 package org.bonitasoft.migration.plugin.dist
 
+import com.github.zafarkhaja.semver.Version
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.Copy
@@ -60,7 +61,7 @@ class MigrationDistribution implements Plugin<Project> {
         project.task(TASK_ADD_BONITA_HOMES, type: Copy) {
             group = MIGRATION_DISTRIBUTION_GROUP
             description = "Get all bonita home for each version and put it in the distribution"
-            project.bonitaVersions.collect { version ->
+            project.bonitaVersions.findAll { (Version.valueOf(it) < Version.valueOf("7.3.0")) }.collect { version ->
                 from(project.configurations."config_$version".files[0].getParent()) {
                     include project.configurations."config_$version".files[0].getName()
                     rename 'bonita-home-(sp-)?([0-9\\.]+[0-9])(.[A-Z1-9]+)?(-full)?.zip', 'bonita-home-$1' + version + '$4.zip'

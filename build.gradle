@@ -12,15 +12,17 @@ configurations {
     deployerJars
 }
 dependencies {
-    testCompile group: 'junit', name: 'junit', version: '4.11'
+    testCompile "junit:junit:4.12"
+    testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
     compile gradleApi()
     compile "org.codehaus.groovy:groovy-all:2.4.4"
+    compile "com.github.zafarkhaja:java-semver:0.9.0"
     deployerJars "org.apache.maven.wagon:wagon-http:2.2"
 }
 uploadArchives {
     repositories.mavenDeployer {
         configuration = configurations.deployerJars
 
-        repository(url: System.getProperty("altDeploymentRepository") != null ? System.getProperty("altDeploymentRepository").split("::").last():null)
+        repository(url: System.getProperty("altDeploymentRepository") != null ? System.getProperty("altDeploymentRepository").split("::").last() : null)
     }
 }

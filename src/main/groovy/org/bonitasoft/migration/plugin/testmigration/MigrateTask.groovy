@@ -14,6 +14,7 @@
 
 package org.bonitasoft.migration.plugin.testmigration
 
+import com.github.zafarkhaja.semver.Version
 import org.gradle.api.tasks.JavaExec
 
 /**
@@ -30,9 +31,11 @@ class MigrateTask extends JavaExec {
                 "db.user"       : String.valueOf(project.database.dbuser),
                 "db.password"   : String.valueOf(project.database.dbpassword),
                 "db.driverClass": String.valueOf(project.database.dbdriverClass),
-                "bonita.home"   : String.valueOf(project.rootProject.buildDir.absolutePath + File.separator + "bonita-home"),
                 "target.version": String.valueOf(project.target)
         ]
+        if (Version.valueOf(project.target) <= Version.valueOf("7.3.0")) {
+            testValues.put("bonita.home", String.valueOf(project.rootProject.buildDir.absolutePath + File.separator + "bonita-home"))
+        }
         setSystemProperties testValues
         logger.info "execute migration with properties $systemProperties"
         setMain "${project.isSP ? 'com' : 'org'}.bonitasoft.migration.core.Migration"
