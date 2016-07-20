@@ -111,10 +111,13 @@ class TestMigration implements Plugin<Project> {
             doFirst setSystemPropertiesForEngine
         }
         //Define task flow
-        project.tasks.migrate.dependsOn project.tasks.unpackBonitaHomeSource
         project.tasks.migrate.dependsOn project.tasks.setupSourceEngine
-        project.tasks.unpackBonitaHomeSource.dependsOn project.tasks.jar
-        project.tasks.setupSourceEngine.dependsOn project.tasks.unpackBonitaHomeSource
+        if (Version.valueOf(project.bonitaPreviousVersionResolved) < Version.valueOf("7.3.0")) {
+            project.tasks.unpackBonitaHomeSource.dependsOn project.tasks.jar
+            project.tasks.setupSourceEngine.dependsOn project.tasks.unpackBonitaHomeSource
+        } else {
+            project.tasks.setupSourceEngine.dependsOn project.tasks.jar
+        }
         project.tasks.setupSourceEngine.dependsOn project.tasks.cleandb
 
         project.tasks.migrate.dependsOn project.tasks.setupSourceEngine
