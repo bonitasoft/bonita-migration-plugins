@@ -73,24 +73,22 @@ class CleanDbTask extends DefaultTask {
 
     private void cleanMysqlDb(CleanDbPluginExtension properties) {
         def (databaseName, genericUrl) = extractDataBaseNameAndGenericUrl(properties)
+        checkRootCredentials(properties)
 
-        def Sql sql = Sql.newInstance(genericUrl, properties.dbuser, properties.dbpassword, properties.dbdriverClass)
-        try {
-            sql.executeUpdate("drop database " + databaseName)
-        } catch (Exception e) {
-            e.printStackTrace()
-            logger.info "can't drop database, maybe it did not exist"
+        def Sql sql = Sql.newInstance(genericUrl, properties.dbRootUser, properties.dbRootPassword, properties.dbdriverClass)
+        sql.executeUpdate("DROP DATABASE IF EXISTS " + databaseName)
+        sql.eachRow("SELECT DISTINCT user FROM mysql.user WHERE user ='" + properties.dbuser + "'") {
+            sql.executeUpdate("DROP USER " + properties.dbuser)
         }
-        sql.executeUpdate("create database " + databaseName + (properties.dbvendor.equals("mysql") ? " DEFAULT CHARACTER SET utf8" : ""))
+        sql.executeUpdate("CREATE USER " + properties.dbuser + " IDENTIFIED BY '" + properties.dbpassword + "'")
+        sql.executeUpdate("CREATE DATABASE " + databaseName + " DEFAULT CHARACTER SET utf8")
+        sql.executeUpdate("GRANT ALL ON " + databaseName + ".* TO " + properties.dbuser)
         sql.close()
     }
 
     private void cleanPostgresDb(CleanDbPluginExtension properties) {
         def (databaseName, genericUrl) = extractDataBaseNameAndGenericUrl(properties)
-
-        if (properties.dbRootUser == null || properties.dbRootUser.isEmpty() || properties.dbRootPassword == null || properties.dbRootPassword.isEmpty()) {
-            throw new IllegalStateException("must specify db.root.user and db.root.password for postgres")
-        }
+        checkRootCredentials(properties)
         def Sql sql = Sql.newInstance((String) genericUrl, (String) properties.dbRootUser, (String) properties.dbRootPassword, (String) properties.dbdriverClass)
 
         // postgres 9.3 script version
@@ -114,6 +112,12 @@ class CleanDbTask extends DefaultTask {
         sql.executeUpdate("CREATE DATABASE $databaseName OWNER $properties.dbuser;".toString())
         sql.executeUpdate("GRANT ALL PRIVILEGES ON DATABASE $databaseName TO $properties.dbuser;".toString())
         sql.close()
+    }
+
+    private void checkRootCredentials(CleanDbPluginExtension properties) {
+        if (properties.dbRootUser == null || properties.dbRootUser.isEmpty() || properties.dbRootPassword == null || properties.dbRootPassword.isEmpty()) {
+            throw new IllegalStateException("must specify db.root.user and db.root.password for postgres")
+        }
     }
 
     private void cleanSqlServerDb(CleanDbPluginExtension properties) {
