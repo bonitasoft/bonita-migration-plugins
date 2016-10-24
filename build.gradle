@@ -1,7 +1,7 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
 
-version '2.17.1'
+version '2.18.0-SNAPSHOT'
 group 'org.bonitasoft.migration.plugin'
 
 repositories {
