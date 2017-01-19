@@ -39,6 +39,7 @@ class MigrationDistribution implements Plugin<Project> {
     @Override
     void apply(Project project) {
         project.mainClassName = "${project.isSP ? 'com' : 'org'}.bonitasoft.migration.core.Migration"
+        project.applicationDefaultJvmArgs = ["-Dfile.encoding=UTF-8"]
         defineConfigurations(project)
         defineExtraSourceSets(project)
         defineDependencies(project)
