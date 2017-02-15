@@ -22,7 +22,6 @@ import org.gradle.api.tasks.JavaExec
  */
 class MigrateTask extends JavaExec {
 
-
     @Override
     void exec() {
         def testValues = [
@@ -31,7 +30,8 @@ class MigrateTask extends JavaExec {
                 "db.user"       : String.valueOf(project.database.dbuser),
                 "db.password"   : String.valueOf(project.database.dbpassword),
                 "db.driverClass": String.valueOf(project.database.dbdriverClass),
-                "target.version": String.valueOf(project.target)
+                "target.version": String.valueOf(project.target),
+                "auto.accept"   : String.valueOf(System.getProperty("auto.accept"))
         ]
         if (Version.valueOf(project.target) <= Version.valueOf("7.3.0")) {
             testValues.put("bonita.home", String.valueOf(project.rootProject.buildDir.absolutePath + File.separator + "bonita-home"))
