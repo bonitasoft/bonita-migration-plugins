@@ -4,6 +4,8 @@ apply plugin: 'maven'
 version '2.21.0-SNAPSHOT'
 group 'org.bonitasoft.migration.plugin'
 
+targetCompatibility = 1.7
+
 repositories {
     mavenLocal()
     mavenCentral()
