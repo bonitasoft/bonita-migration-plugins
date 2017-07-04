@@ -1,7 +1,7 @@
 apply plugin: 'groovy'
 apply plugin: 'maven'
 
-version '2.24.0'
+version '2.25.0-SNAPSHOT'
 group 'org.bonitasoft.migration.plugin'
 
 sourceCompatibility = 1.7
